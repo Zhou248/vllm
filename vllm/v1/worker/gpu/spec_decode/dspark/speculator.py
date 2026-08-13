@@ -40,6 +40,20 @@ class DSparkSpeculator(DFlashSpeculator):
     def __init__(self, vllm_config: VllmConfig, device: torch.device):
         super().__init__(vllm_config, device)
 
+        # The Qwen3 draft's input vocabulary may contain an extra noise token,
+        # while rejection sampling always operates in the target vocabulary.
+        target_vocab_size = vllm_config.model_config.get_vocab_size()
+        if self.vocab_size != target_vocab_size:
+            self.vocab_size = target_vocab_size
+            if self.draft_logits is not None:
+                self.draft_logits = torch.zeros(
+                    self.max_num_reqs,
+                    self.num_speculative_steps,
+                    self.vocab_size,
+                    dtype=torch.float32,
+                    device=device,
+                )
+
         # Anchor-as-first (N slots) unless the checkpoint uses the 1+N fill-in
         # block, where the anchor is a separate bonus token.
         self.sample_from_anchor = not getattr(

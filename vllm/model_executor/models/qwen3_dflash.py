@@ -356,10 +356,10 @@ class DFlashQwen3Model(nn.Module):
         drafter_config = getattr(self.config, "eagle_config", {})
         drafter_config.update(getattr(self.config, "dflash_config", {}))
 
-        if drafter_config is not None and "use_aux_hidden_state" in drafter_config:
-            self.use_aux_hidden_state = drafter_config["use_aux_hidden_state"]
-        else:
-            self.use_aux_hidden_state = True
+        self.use_aux_hidden_state = drafter_config.get(
+            "use_aux_hidden_state",
+            getattr(self.config, "use_aux_hidden_state", True),
+        )
 
         current_vllm_config = get_current_vllm_config()
 
@@ -374,7 +374,9 @@ class DFlashQwen3Model(nn.Module):
         # at that slot id. Some checkpoints (XiaomiMiMo/MiMo-V2.5-Pro-FP4-DFlash) ship
         # with a separate mask embedding tensor to use instead. When present, we load it
         # and substitute it for embed_tokens[mask_token_id] when computing embeddings.
-        self.mask_token_id = drafter_config.get("mask_token_id")
+        self.mask_token_id = drafter_config.get(
+            "mask_token_id", getattr(self.config, "mask_token_id", None)
+        )
         self.mask_embedding = nn.Parameter(
             torch.zeros(self.config.hidden_size, dtype=vllm_config.model_config.dtype),
             requires_grad=False,
@@ -396,8 +398,13 @@ class DFlashQwen3Model(nn.Module):
         )
         if self.use_aux_hidden_state:
             num_features_to_use = self.config.num_hidden_layers
-            if "target_layer_ids" in drafter_config:
-                num_features_to_use = len(drafter_config["target_layer_ids"])
+            target_layer_ids = drafter_config.get("target_layer_ids")
+            if target_layer_ids is None:
+                target_layer_ids = getattr(self.config, "dspark_target_layer_ids", None)
+            if target_layer_ids is None:
+                target_layer_ids = getattr(self.config, "target_layer_ids", None)
+            if target_layer_ids is not None:
+                num_features_to_use = len(target_layer_ids)
             elif "layer_ids" in drafter_config:
                 num_features_to_use = len(drafter_config["layer_ids"])
             if hasattr(self.config, "target_hidden_size"):

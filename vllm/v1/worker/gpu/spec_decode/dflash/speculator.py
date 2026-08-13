@@ -38,7 +38,9 @@ class DFlashSpeculator(DraftModelSpeculator):
             self.max_num_tokens, self.hidden_size, dtype=self.dtype, device=device
         )
 
-        # Multimodal inputs not currently supported.
+        # The draft does not run multimodal encoders itself. Multimodal targets
+        # such as Qwen3-Omni pass modality information through their auxiliary
+        # language-model hidden states instead.
         self.supports_mm_inputs = False
 
         # Each request emits exactly (bonus + N mask) query tokens per step.

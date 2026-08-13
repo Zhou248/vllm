@@ -19,6 +19,7 @@ def load_dspark_model(target_model: nn.Module, vllm_config: VllmConfig) -> nn.Mo
 
     from vllm.compilation.backends import set_model_tag
     from vllm.model_executor.models.qwen3_dflash import dflash_has_any_non_causal
+    from vllm.model_executor.models.utils import get_draft_quant_config
 
     draft_vllm_config = replace(
         vllm_config,
@@ -36,6 +37,10 @@ def load_dspark_model(target_model: nn.Module, vllm_config: VllmConfig) -> nn.Mo
             else vllm_config.cache_config
         ),
     )
+    # replace() retains the target ModelConfig and its resolved quantization
+    # object. The standalone drafter must instead use its own checkpoint's
+    # quantization configuration.
+    draft_vllm_config.quant_config = get_draft_quant_config(vllm_config)
 
     with set_model_tag("dspark_head"):
         draft_model = get_model(
@@ -52,11 +57,16 @@ def load_dspark_model(target_model: nn.Module, vllm_config: VllmConfig) -> nn.Mo
     )
     target_inner = target_language_model.model
     draft_inner = draft_model.model
+    target_vocab_size = vllm_config.model_config.get_vocab_size()
 
     target_embed = getattr(target_inner, "embed_tokens", None)
     draft_embed = getattr(draft_inner, "embed_tokens", None)
-    if target_embed is not None and _should_share(
-        draft_model, "has_own_embed_tokens", draft_embed, target_embed
+    if (
+        target_embed is not None
+        and draft_model_config.get_vocab_size() == target_vocab_size
+        and _should_share(
+            draft_model, "has_own_embed_tokens", draft_embed, target_embed
+        )
     ):
         if draft_embed is not None:
             del draft_inner.embed_tokens
@@ -64,8 +74,14 @@ def load_dspark_model(target_model: nn.Module, vllm_config: VllmConfig) -> nn.Mo
 
     target_lm_head = get_target_lm_head(target_model, target_language_model)
     draft_lm_head = getattr(draft_model, "lm_head", None)
-    if target_lm_head is not None and _should_share(
-        draft_model, "has_own_lm_head", draft_lm_head, target_lm_head
+    draft_output_vocab_size = (
+        getattr(draft_model_config.hf_config, "draft_vocab_size", None)
+        or draft_model_config.get_vocab_size()
+    )
+    if (
+        target_lm_head is not None
+        and draft_output_vocab_size == target_vocab_size
+        and _should_share(draft_model, "has_own_lm_head", draft_lm_head, target_lm_head)
     ):
         if draft_lm_head is not None:
             del draft_model.lm_head

@@ -117,8 +117,8 @@ class Qwen3DSparkForCausalLM(DFlashQwen3ForCausalLM):
         self.logits_processor = LogitsProcessor(
             self.config.draft_vocab_size, scale=logit_scale
         )
-        target_vocab_size = vllm_config.model_config.get_vocab_size()
-        if self.config.draft_vocab_size != target_vocab_size:
+        self.target_vocab_size = vllm_config.model_config.get_vocab_size()
+        if self.config.draft_vocab_size != self.target_vocab_size:
             self.draft_id_to_target_id = nn.Parameter(
                 torch.zeros(self.config.draft_vocab_size, dtype=torch.long),
                 requires_grad=False,
@@ -173,6 +173,24 @@ class Qwen3DSparkForCausalLM(DFlashQwen3ForCausalLM):
         # confidence_head is not wired into inference yet; skip its weights.
         # embed_tokens / lm_head are optional; when omitted they are shared from
         # the target by load_dspark_model, so skip the unloaded params here.
+        uses_expanded_input_vocab = self.config.vocab_size != self.target_vocab_size
+        uses_reduced_vocab = self.config.draft_vocab_size != self.target_vocab_size
+        if uses_expanded_input_vocab and not includes_embed_tokens:
+            raise ValueError(
+                "Qwen3 DSpark checkpoints whose input vocab_size differs from "
+                "the target vocabulary must include embed_tokens weights."
+            )
+        if uses_reduced_vocab and not includes_lm_head:
+            raise ValueError(
+                "Reduced-vocabulary Qwen3 DSpark checkpoints must include "
+                "lm_head weights; the full target lm_head cannot be shared."
+            )
+        if uses_reduced_vocab and not includes_draft_id_mapping:
+            raise ValueError(
+                "Reduced-vocabulary Qwen3 DSpark checkpoints must include a "
+                "d2t mapping so sampled draft ids can be converted to target ids."
+            )
+
         skip_substrs = ["mask_embedding", "confidence_head"]
         if not includes_embed_tokens:
             skip_substrs.append("embed_tokens")
