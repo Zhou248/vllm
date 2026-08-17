@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
-"""Convert a Qwen3 DSpark checkpoint for Qwen3-Omni smoke testing.
+"""Build a dedicated Qwen3-Omni DSpark checkpoint for smoke testing.
 
 The converted checkpoint is shape-compatible, not trained for Qwen3-Omni. It is
 intended only to validate model loading and the speculative-decoding data path.
+The converter rebuilds the dense draft's hidden width, Q/KV head geometry,
+attention and MLP projections, norms, FC bridge, vocab-facing tensors, and
+Markov tables to dimensions accepted by the Omni thinker contract.
 """
 
 from __future__ import annotations
@@ -29,6 +32,9 @@ from safetensors.torch import save_file
 class TargetTextConfig:
     hidden_size: int
     num_hidden_layers: int
+    num_attention_heads: int
+    num_key_value_heads: int
+    head_dim: int
     vocab_size: int
     max_position_embeddings: int | None
 
@@ -45,7 +51,12 @@ class ConversionPlan:
     source_target_hidden_size: int
     target_layer_ids: tuple[int, ...]
     target: TargetTextConfig
-    draft_hidden_size: int
+    source_draft_hidden_size: int
+    source_intermediate_size: int
+    draft_num_hidden_layers: int
+    source_num_attention_heads: int
+    source_num_key_value_heads: int
+    source_head_dim: int
     draft_input_vocab_size: int
     draft_output_vocab_size: int
     markov_rank: int
@@ -56,6 +67,7 @@ class ConversionPlan:
     markov_w1_key: str
     markov_w2_key: str
     d2t_key: str | None
+    attention_projection_keys: frozenset[str]
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -152,13 +164,33 @@ def _extract_target_text_config(config: dict[str, Any]) -> TargetTextConfig:
         max_position_embeddings = _as_positive_int(
             max_position_embeddings, "target max_position_embeddings"
         )
+    hidden_size = _as_positive_int(
+        text_config.get("hidden_size"), "target text hidden_size"
+    )
+    num_attention_heads = _as_positive_int(
+        text_config.get("num_attention_heads"),
+        "target text num_attention_heads",
+    )
+    num_key_value_heads = _as_positive_int(
+        text_config.get("num_key_value_heads", num_attention_heads),
+        "target text num_key_value_heads",
+    )
+    head_dim = text_config.get("head_dim")
+    if head_dim is None:
+        if hidden_size % num_attention_heads != 0:
+            raise ValueError(
+                "Target text config must define head_dim when hidden_size is not "
+                "divisible by num_attention_heads."
+            )
+        head_dim = hidden_size // num_attention_heads
     return TargetTextConfig(
-        hidden_size=_as_positive_int(
-            text_config.get("hidden_size"), "target text hidden_size"
-        ),
+        hidden_size=hidden_size,
         num_hidden_layers=_as_positive_int(
             text_config.get("num_hidden_layers"), "target text num_hidden_layers"
         ),
+        num_attention_heads=num_attention_heads,
+        num_key_value_heads=num_key_value_heads,
+        head_dim=_as_positive_int(head_dim, "target text head_dim"),
         vocab_size=_as_positive_int(
             text_config.get("vocab_size"), "target text vocab_size"
         ),
@@ -255,9 +287,10 @@ def _validate_target_layer_ids(
 
 def _reject_unsupported_draft_config(config: dict[str, Any]) -> None:
     architectures = set(config.get("architectures") or ())
-    if "Qwen3DSparkModel" not in architectures:
+    if not architectures & {"Qwen3DSparkModel", "Qwen3OmniDSparkModel"}:
         raise ValueError(
-            "--draft-model must declare architectures=['Qwen3DSparkModel']."
+            "--draft-model must declare Qwen3DSparkModel or "
+            "Qwen3OmniDSparkModel in architectures."
         )
     if config.get("quantization_config") or config.get("quant_method"):
         raise ValueError(
@@ -268,6 +301,95 @@ def _reject_unsupported_draft_config(config: dict[str, Any]) -> None:
         isinstance(value, dict) and "mrope_section" in value for value in rope_configs
     ):
         raise ValueError("The DSpark draft must use logical 1-D RoPE, not MRoPE.")
+
+
+def _attention_projection_keys(
+    tensors: dict[str, TensorInfo], suffix: str
+) -> tuple[str, ...]:
+    return tuple(
+        sorted(key for key in tensors if key == suffix or key.endswith(f".{suffix}"))
+    )
+
+
+def _validate_attention_weights(
+    tensors: dict[str, TensorInfo],
+    *,
+    num_hidden_layers: int,
+    hidden_size: int,
+    num_attention_heads: int,
+    num_key_value_heads: int,
+    head_dim: int,
+) -> frozenset[str]:
+    packed_keys = _attention_projection_keys(tensors, "self_attn.qkv_proj.weight")
+    if packed_keys:
+        raise ValueError(
+            "Packed qkv_proj weights are not supported by this converter; "
+            "use a checkpoint with separate q_proj/k_proj/v_proj tensors."
+        )
+
+    suffixes = {
+        "q": "self_attn.q_proj.weight",
+        "k": "self_attn.k_proj.weight",
+        "v": "self_attn.v_proj.weight",
+        "o": "self_attn.o_proj.weight",
+    }
+    keys = {
+        name: _attention_projection_keys(tensors, suffix)
+        for name, suffix in suffixes.items()
+    }
+    for name, projection_keys in keys.items():
+        if len(projection_keys) != num_hidden_layers:
+            raise ValueError(
+                f"Expected {num_hidden_layers} {name}_proj weight tensors; "
+                f"found {len(projection_keys)}."
+            )
+
+    def prefixes(name: str) -> set[str]:
+        suffix = suffixes[name]
+        return {key[: -len(suffix)] for key in keys[name]}
+
+    q_prefixes = prefixes("q")
+    for name in ("k", "v", "o"):
+        if prefixes(name) != q_prefixes:
+            raise ValueError(
+                f"Attention {name}_proj tensors do not cover the same layers "
+                "as q_proj tensors."
+            )
+
+    q_size = num_attention_heads * head_dim
+    kv_size = num_key_value_heads * head_dim
+    expected_shapes = {
+        "q": (q_size, hidden_size),
+        "k": (kv_size, hidden_size),
+        "v": (kv_size, hidden_size),
+        "o": (hidden_size, q_size),
+    }
+    for name, projection_keys in keys.items():
+        expected = expected_shapes[name]
+        for key in projection_keys:
+            if tensors[key].shape != expected:
+                raise ValueError(
+                    f"{key} must have shape {expected}; got {tensors[key].shape}."
+                )
+
+    resize_keys = set().union(*keys.values())
+    for prefix in q_prefixes:
+        for name in ("q", "k", "v", "o"):
+            bias_key = f"{prefix}self_attn.{name}_proj.bias"
+            if bias_key in tensors:
+                projection_size = {
+                    "q": q_size,
+                    "k": kv_size,
+                    "v": kv_size,
+                    "o": hidden_size,
+                }[name]
+                if tensors[bias_key].shape != (projection_size,):
+                    raise ValueError(
+                        f"{bias_key} must have shape {(projection_size,)}; got "
+                        f"{tensors[bias_key].shape}."
+                    )
+                resize_keys.add(bias_key)
+    return frozenset(resize_keys)
 
 
 def _make_plan(
@@ -281,29 +403,64 @@ def _make_plan(
     target_layer_ids = requested_layer_ids or source_layer_ids
     _validate_target_layer_ids(target_layer_ids, target.num_hidden_layers)
 
-    draft_hidden_size = _as_positive_int(
+    source_draft_hidden_size = _as_positive_int(
         draft_config.get("hidden_size"), "draft hidden_size"
+    )
+    source_intermediate_size = _as_positive_int(
+        draft_config.get("intermediate_size"), "draft intermediate_size"
+    )
+    draft_num_hidden_layers = _as_positive_int(
+        draft_config.get("num_hidden_layers"), "draft num_hidden_layers"
+    )
+    source_num_attention_heads = _as_positive_int(
+        draft_config.get("num_attention_heads"), "draft num_attention_heads"
+    )
+    source_num_key_value_heads = _as_positive_int(
+        draft_config.get("num_key_value_heads", source_num_attention_heads),
+        "draft num_key_value_heads",
+    )
+    source_head_dim = draft_config.get("head_dim")
+    if source_head_dim is None:
+        if source_draft_hidden_size % source_num_attention_heads != 0:
+            raise ValueError(
+                "Draft config must define head_dim when hidden_size is not "
+                "divisible by num_attention_heads."
+            )
+        source_head_dim = source_draft_hidden_size // source_num_attention_heads
+    source_head_dim = _as_positive_int(source_head_dim, "draft head_dim")
+    attention_projection_keys = _validate_attention_weights(
+        tensors,
+        num_hidden_layers=draft_num_hidden_layers,
+        hidden_size=source_draft_hidden_size,
+        num_attention_heads=source_num_attention_heads,
+        num_key_value_heads=source_num_key_value_heads,
+        head_dim=source_head_dim,
     )
     markov_rank = _as_positive_int(draft_config.get("markov_rank"), "draft markov_rank")
     source_input_vocab = _as_positive_int(
         draft_config.get("vocab_size"), "draft vocab_size"
     )
-    source_output_vocab = _as_positive_int(
+    _as_positive_int(
         draft_config.get("draft_vocab_size") or source_input_vocab,
         "draft output vocab size",
     )
-    # Keep the smoke-only mask outside the target vocabulary. Reusing Qwen3's
-    # mask ID would collide with a real Qwen3-Omni special token (151669).
-    mask_token_id = target.vocab_size
-    draft_input_vocab = max(source_input_vocab, mask_token_id + 1)
-    draft_output_vocab = min(source_output_vocab, target.vocab_size)
+    source_mask_token_id = draft_config.get("mask_token_id")
+    if not isinstance(source_mask_token_id, int) or isinstance(
+        source_mask_token_id, bool
+    ):
+        source_mask_token_id = target.vocab_size - 1
+    mask_token_id = min(max(source_mask_token_id, 0), target.vocab_size - 1)
+    # The smoke checkpoint uses the full target vocabulary. This avoids a
+    # training-only d2t mapping and keeps all NPU runtime dimensions target-led.
+    draft_input_vocab = target.vocab_size
+    draft_output_vocab = target.vocab_size
 
     fc_key = _find_tensor_key(tensors, "fc.weight", required=True)
     assert fc_key is not None
     fc_shape = tensors[fc_key].shape
-    if len(fc_shape) != 2 or fc_shape[0] != draft_hidden_size:
+    if len(fc_shape) != 2 or fc_shape[0] != source_draft_hidden_size:
         raise ValueError(
-            f"{fc_key} must have shape [{draft_hidden_size}, input_size]; "
+            f"{fc_key} must have shape [{source_draft_hidden_size}, input_size]; "
             f"got {fc_shape}."
         )
     if fc_shape[1] % len(source_layer_ids) != 0:
@@ -331,8 +488,8 @@ def _make_plan(
     )
     assert markov_w1_key is not None and markov_w2_key is not None
 
-    _validate_matrix_columns(tensors, embed_key, draft_hidden_size)
-    _validate_matrix_columns(tensors, lm_head_key, draft_hidden_size)
+    _validate_matrix_columns(tensors, embed_key, source_draft_hidden_size)
+    _validate_matrix_columns(tensors, lm_head_key, source_draft_hidden_size)
     _validate_matrix_columns(tensors, markov_w1_key, markov_rank)
     _validate_matrix_columns(tensors, markov_w2_key, markov_rank)
 
@@ -341,7 +498,12 @@ def _make_plan(
         source_target_hidden_size=source_target_hidden,
         target_layer_ids=target_layer_ids,
         target=target,
-        draft_hidden_size=draft_hidden_size,
+        source_draft_hidden_size=source_draft_hidden_size,
+        source_intermediate_size=source_intermediate_size,
+        draft_num_hidden_layers=draft_num_hidden_layers,
+        source_num_attention_heads=source_num_attention_heads,
+        source_num_key_value_heads=source_num_key_value_heads,
+        source_head_dim=source_head_dim,
         draft_input_vocab_size=draft_input_vocab,
         draft_output_vocab_size=draft_output_vocab,
         markov_rank=markov_rank,
@@ -352,6 +514,7 @@ def _make_plan(
         markov_w1_key=markov_w1_key,
         markov_w2_key=markov_w2_key,
         d2t_key=_find_mapping_key(tensors, {"d2t", "draft_id_to_target_id"}),
+        attention_projection_keys=attention_projection_keys,
     )
 
 
@@ -370,14 +533,23 @@ def _converted_config(source: dict[str, Any], plan: ConversionPlan) -> dict[str,
     layer_ids = list(plan.target_layer_ids)
     config.update(
         {
-            "architectures": ["Qwen3DSparkModel"],
+            "architectures": ["Qwen3OmniDSparkModel"],
             "model_type": "qwen3",
+            "hidden_size": plan.target.hidden_size,
+            "num_attention_heads": plan.target.num_attention_heads,
+            "num_key_value_heads": plan.target.num_key_value_heads,
+            "head_dim": plan.target.head_dim,
             "target_hidden_size": plan.target.hidden_size,
             "num_target_layers": plan.target.num_hidden_layers,
             "target_layer_ids": layer_ids,
             "dspark_target_layer_ids": layer_ids,
             "eagle_aux_hidden_state_layer_ids": [item + 1 for item in layer_ids],
             "use_aux_hidden_state": True,
+            "markov_head_type": "vanilla",
+            "sample_from_anchor": True,
+            "dspark_bonus_anchor": False,
+            "enable_confidence_head": False,
+            "confidence_head_with_markov": False,
             "vocab_size": plan.draft_input_vocab_size,
             "draft_vocab_size": plan.draft_output_vocab_size,
             "mask_token_id": plan.mask_token_id,
@@ -404,20 +576,34 @@ def _converted_config(source: dict[str, Any], plan: ConversionPlan) -> dict[str,
 
 
 def _resize_rows(tensor: torch.Tensor, rows: int, columns: int) -> torch.Tensor:
-    if tensor.ndim != 2 or tensor.shape[1] != columns:
+    if tensor.ndim != 2:
         raise ValueError(
             f"Cannot resize tensor with shape {tuple(tensor.shape)} to "
             f"[{rows}, {columns}]."
         )
     output = torch.zeros((rows, columns), dtype=tensor.dtype)
     copied_rows = min(rows, tensor.shape[0])
-    output[:copied_rows].copy_(tensor[:copied_rows])
+    copied_columns = min(columns, tensor.shape[1])
+    output[:copied_rows, :copied_columns].copy_(tensor[:copied_rows, :copied_columns])
+    return output
+
+
+def _resize_vector(
+    tensor: torch.Tensor, size: int, *, fill_value: float = 0.0
+) -> torch.Tensor:
+    if tensor.ndim != 1:
+        raise ValueError(
+            f"Cannot resize tensor with shape {tuple(tensor.shape)} to [{size}]."
+        )
+    output = torch.full((size,), fill_value, dtype=tensor.dtype)
+    copied_size = min(size, tensor.shape[0])
+    output[:copied_size].copy_(tensor[:copied_size])
     return output
 
 
 def _resize_fc(tensor: torch.Tensor, plan: ConversionPlan) -> torch.Tensor:
     expected = (
-        plan.draft_hidden_size,
+        plan.source_draft_hidden_size,
         plan.source_feature_count * plan.source_target_hidden_size,
     )
     if tuple(tensor.shape) != expected:
@@ -425,13 +611,13 @@ def _resize_fc(tensor: torch.Tensor, plan: ConversionPlan) -> torch.Tensor:
             f"Expected fc.weight shape {expected}; got {tuple(tensor.shape)}."
         )
     source = tensor.reshape(
-        plan.draft_hidden_size,
+        plan.source_draft_hidden_size,
         plan.source_feature_count,
         plan.source_target_hidden_size,
     )
     output = torch.zeros(
         (
-            plan.draft_hidden_size,
+            plan.target.hidden_size,
             len(plan.target_layer_ids),
             plan.target.hidden_size,
         ),
@@ -439,10 +625,103 @@ def _resize_fc(tensor: torch.Tensor, plan: ConversionPlan) -> torch.Tensor:
     )
     feature_count = min(plan.source_feature_count, len(plan.target_layer_ids))
     hidden_size = min(plan.source_target_hidden_size, plan.target.hidden_size)
-    output[:, :feature_count, :hidden_size].copy_(
-        source[:, :feature_count, :hidden_size]
+    output_hidden_size = min(plan.source_draft_hidden_size, plan.target.hidden_size)
+    output[:output_hidden_size, :feature_count, :hidden_size].copy_(
+        source[:output_hidden_size, :feature_count, :hidden_size]
     )
-    return output.reshape(plan.draft_hidden_size, -1)
+    return output.reshape(plan.target.hidden_size, -1)
+
+
+def _attention_target_shape(key: str, plan: ConversionPlan) -> tuple[int, ...]:
+    q_size = plan.target.num_attention_heads * plan.target.head_dim
+    kv_size = plan.target.num_key_value_heads * plan.target.head_dim
+    if key.endswith("self_attn.q_proj.weight"):
+        return (q_size, plan.target.hidden_size)
+    if key.endswith(("self_attn.k_proj.weight", "self_attn.v_proj.weight")):
+        return (kv_size, plan.target.hidden_size)
+    if key.endswith("self_attn.o_proj.weight"):
+        return (plan.target.hidden_size, q_size)
+    if key.endswith("self_attn.q_proj.bias"):
+        return (q_size,)
+    if key.endswith(("self_attn.k_proj.bias", "self_attn.v_proj.bias")):
+        return (kv_size,)
+    if key.endswith("self_attn.o_proj.bias"):
+        return (plan.target.hidden_size,)
+    raise ValueError(f"Unknown attention projection tensor: {key}.")
+
+
+def _resize_attention_tensor(
+    key: str, tensor: torch.Tensor, plan: ConversionPlan
+) -> torch.Tensor:
+    shape = _attention_target_shape(key, plan)
+    if len(shape) == 2:
+        return _resize_rows(tensor, shape[0], shape[1])
+    return _resize_vector(tensor, shape[0])
+
+
+def _resize_backbone_tensor(
+    key: str, tensor: torch.Tensor, plan: ConversionPlan
+) -> torch.Tensor:
+    hidden_size = plan.target.hidden_size
+    intermediate_size = plan.source_intermediate_size
+    if key.endswith(("mlp.gate_proj.weight", "mlp.up_proj.weight")):
+        return _resize_rows(tensor, intermediate_size, hidden_size)
+    if key.endswith("mlp.down_proj.weight"):
+        return _resize_rows(tensor, hidden_size, intermediate_size)
+    if key.endswith(("mlp.gate_proj.bias", "mlp.up_proj.bias")):
+        return _resize_vector(tensor, intermediate_size)
+    if key.endswith("mlp.down_proj.bias"):
+        return _resize_vector(tensor, hidden_size)
+    if key.endswith(("self_attn.q_norm.weight", "self_attn.k_norm.weight")):
+        return _resize_vector(tensor, plan.target.head_dim, fill_value=1.0)
+    if key.endswith(("self_attn.q_norm.bias", "self_attn.k_norm.bias")):
+        return _resize_vector(tensor, plan.target.head_dim)
+    if key.endswith(
+        (
+            "input_layernorm.weight",
+            "post_attention_layernorm.weight",
+            "hidden_norm.weight",
+            "verifier_norm.weight",
+        )
+    ) or key in {"norm.weight", "model.norm.weight"}:
+        return _resize_vector(tensor, hidden_size, fill_value=1.0)
+    if key.endswith("rotary_emb.inv_freq"):
+        return _resize_vector(tensor, plan.target.head_dim // 2)
+    return tensor.clone()
+
+
+def _backbone_target_shape(key: str, plan: ConversionPlan) -> tuple[int, ...] | None:
+    hidden_size = plan.target.hidden_size
+    intermediate_size = plan.source_intermediate_size
+    if key.endswith(("mlp.gate_proj.weight", "mlp.up_proj.weight")):
+        return (intermediate_size, hidden_size)
+    if key.endswith("mlp.down_proj.weight"):
+        return (hidden_size, intermediate_size)
+    if key.endswith(("mlp.gate_proj.bias", "mlp.up_proj.bias")):
+        return (intermediate_size,)
+    if key.endswith("mlp.down_proj.bias"):
+        return (hidden_size,)
+    if key.endswith(
+        (
+            "self_attn.q_norm.weight",
+            "self_attn.k_norm.weight",
+            "self_attn.q_norm.bias",
+            "self_attn.k_norm.bias",
+        )
+    ):
+        return (plan.target.head_dim,)
+    if key.endswith(
+        (
+            "input_layernorm.weight",
+            "post_attention_layernorm.weight",
+            "hidden_norm.weight",
+            "verifier_norm.weight",
+        )
+    ) or key in {"norm.weight", "model.norm.weight"}:
+        return (hidden_size,)
+    if key.endswith("rotary_emb.inv_freq"):
+        return (plan.target.head_dim // 2,)
+    return None
 
 
 def _iter_source_tensors(
@@ -455,6 +734,8 @@ def _iter_source_tensors(
                 leaf = key.split(".")[-1]
                 if key in skipped or leaf in {"t2d", "target_id_to_draft_id"}:
                     continue
+                if "confidence_head" in key or "mask_embedding" in key:
+                    continue
                 tensor = handle.get_tensor(key)
                 if key == plan.fc_key:
                     tensor = _resize_fc(tensor, plan)
@@ -462,13 +743,13 @@ def _iter_source_tensors(
                     tensor = _resize_rows(
                         tensor,
                         plan.draft_input_vocab_size,
-                        plan.draft_hidden_size,
+                        plan.target.hidden_size,
                     )
                 elif key == plan.lm_head_key:
                     tensor = _resize_rows(
                         tensor,
                         plan.draft_output_vocab_size,
-                        plan.draft_hidden_size,
+                        plan.target.hidden_size,
                     )
                 elif key == plan.markov_w1_key:
                     tensor = _resize_rows(
@@ -482,8 +763,10 @@ def _iter_source_tensors(
                         plan.draft_output_vocab_size,
                         plan.markov_rank,
                     )
+                elif key in plan.attention_projection_keys:
+                    tensor = _resize_attention_tensor(key, tensor, plan)
                 else:
-                    tensor = tensor.clone()
+                    tensor = _resize_backbone_tensor(key, tensor, plan)
                 yield key, tensor.contiguous()
 
 
@@ -495,14 +778,14 @@ def _iter_converted_tensors(
         yield (
             "embed_tokens.weight",
             torch.zeros(
-                (plan.draft_input_vocab_size, plan.draft_hidden_size), dtype=dtype
+                (plan.draft_input_vocab_size, plan.target.hidden_size), dtype=dtype
             ),
         )
     if plan.lm_head_key is None:
         yield (
             "lm_head.weight",
             torch.zeros(
-                (plan.draft_output_vocab_size, plan.draft_hidden_size), dtype=dtype
+                (plan.draft_output_vocab_size, plan.target.hidden_size), dtype=dtype
             ),
         )
     if plan.draft_output_vocab_size != plan.target.vocab_size:
@@ -581,7 +864,7 @@ def _validate_output_checkpoint(directory: Path, plan: ConversionPlan) -> None:
     tensors = _inspect_tensors(_weight_files(directory))
     expected_shapes = {
         plan.fc_key: (
-            plan.draft_hidden_size,
+            plan.target.hidden_size,
             len(plan.target_layer_ids) * plan.target.hidden_size,
         ),
         plan.markov_w1_key: (plan.draft_input_vocab_size, plan.markov_rank),
@@ -591,12 +874,17 @@ def _validate_output_checkpoint(directory: Path, plan: ConversionPlan) -> None:
     lm_head_key = plan.lm_head_key or "lm_head.weight"
     expected_shapes[embed_key] = (
         plan.draft_input_vocab_size,
-        plan.draft_hidden_size,
+        plan.target.hidden_size,
     )
     expected_shapes[lm_head_key] = (
         plan.draft_output_vocab_size,
-        plan.draft_hidden_size,
+        plan.target.hidden_size,
     )
+    for key in plan.attention_projection_keys:
+        expected_shapes[key] = _attention_target_shape(key, plan)
+    for key in tensors:
+        if (shape := _backbone_target_shape(key, plan)) is not None:
+            expected_shapes[key] = shape
     for key, expected in expected_shapes.items():
         actual = tensors.get(key)
         if actual is None:
@@ -680,19 +968,32 @@ def convert_checkpoint(
         _validate_output_checkpoint(temporary, plan)
         manifest = {
             "purpose": "Qwen3-Omni DSpark framework smoke test only",
+            "architecture": "Qwen3OmniDSparkModel",
             "source_draft_model": draft_model,
             "target_model": target_model,
             "source_target_hidden_size": plan.source_target_hidden_size,
+            "source_draft_hidden_size": plan.source_draft_hidden_size,
             "target_hidden_size": target.hidden_size,
             "target_num_hidden_layers": target.num_hidden_layers,
             "target_layer_ids": list(plan.target_layer_ids),
+            "source_attention_geometry": {
+                "num_attention_heads": plan.source_num_attention_heads,
+                "num_key_value_heads": plan.source_num_key_value_heads,
+                "head_dim": plan.source_head_dim,
+            },
+            "target_attention_geometry": {
+                "num_attention_heads": target.num_attention_heads,
+                "num_key_value_heads": target.num_key_value_heads,
+                "head_dim": target.head_dim,
+            },
+            "tensor_conversion": "deterministic overlap copy with zero padding",
             "draft_input_vocab_size": plan.draft_input_vocab_size,
             "draft_output_vocab_size": plan.draft_output_vocab_size,
             "target_vocab_size": target.vocab_size,
             "mask_token_id": plan.mask_token_id,
             "generated_zero_embedding": plan.embed_key is None,
             "generated_zero_lm_head": plan.lm_head_key is None,
-            "token_mapping": "identity over the retained draft vocabulary",
+            "token_mapping": "full target vocabulary; no d2t remap",
             "accuracy_expected": False,
         }
         _write_json(temporary / "conversion_manifest.json", manifest)

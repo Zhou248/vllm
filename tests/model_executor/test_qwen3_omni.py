@@ -296,13 +296,16 @@ def test_qwen3_omni_text_model_collects_post_deepstack_aux_hidden_states():
     torch.testing.assert_close(aux_hidden_states[0], torch.tensor([[15.0]]))
 
 
+@pytest.mark.skip_global_cleanup
 def test_qwen3_omni_reduced_vocab_dspark_requires_mapping_and_head():
     """A reduced draft vocabulary cannot silently share the target LM head."""
     from types import SimpleNamespace
 
-    from vllm.model_executor.models.qwen3_dspark import Qwen3DSparkForCausalLM
+    from vllm.model_executor.models.qwen3_omni_dspark import (
+        Qwen3OmniDSparkForCausalLM,
+    )
 
-    model = Qwen3DSparkForCausalLM.__new__(Qwen3DSparkForCausalLM)
+    model = Qwen3OmniDSparkForCausalLM.__new__(Qwen3OmniDSparkForCausalLM)
     nn.Module.__init__(model)
     object.__setattr__(
         model,
@@ -318,13 +321,30 @@ def test_qwen3_omni_reduced_vocab_dspark_requires_mapping_and_head():
         model.load_weights([("lm_head.weight", torch.empty(40, 8))])
 
 
+@pytest.mark.skip_global_cleanup
+def test_qwen3_omni_dspark_uses_dedicated_model_class():
+    from vllm.model_executor.models.qwen3_omni_dspark import (
+        Qwen3OmniDSparkAttention,
+        Qwen3OmniDSparkDecoderLayer,
+        Qwen3OmniDSparkForCausalLM,
+        Qwen3OmniDSparkModel,
+    )
+
+    assert Qwen3OmniDSparkForCausalLM.model_cls is Qwen3OmniDSparkModel
+    assert Qwen3OmniDSparkModel.decoder_layer_cls is Qwen3OmniDSparkDecoderLayer
+    assert Qwen3OmniDSparkDecoderLayer.attention_cls is Qwen3OmniDSparkAttention
+
+
+@pytest.mark.skip_global_cleanup
 def test_qwen3_omni_expanded_dspark_input_vocab_requires_embedding():
     """A draft-only noise row prevents sharing the smaller target embedding."""
     from types import SimpleNamespace
 
-    from vllm.model_executor.models.qwen3_dspark import Qwen3DSparkForCausalLM
+    from vllm.model_executor.models.qwen3_omni_dspark import (
+        Qwen3OmniDSparkForCausalLM,
+    )
 
-    model = Qwen3DSparkForCausalLM.__new__(Qwen3DSparkForCausalLM)
+    model = Qwen3OmniDSparkForCausalLM.__new__(Qwen3OmniDSparkForCausalLM)
     nn.Module.__init__(model)
     object.__setattr__(
         model,
@@ -337,6 +357,7 @@ def test_qwen3_omni_expanded_dspark_input_vocab_requires_embedding():
         model.load_weights([])
 
 
+@pytest.mark.skip_global_cleanup
 def test_dspark_probabilistic_buffer_uses_target_output_vocab():
     """An extra draft-only noise row must not widen rejection-sampling logits."""
     from types import SimpleNamespace

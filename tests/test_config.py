@@ -1594,24 +1594,43 @@ def test_draft_sample_method_gumbel_is_rejected():
 
 
 def _make_qwen3_omni_dspark_configs():
+    text_config = SimpleNamespace(
+        hidden_size=2048,
+        num_hidden_layers=48,
+        num_attention_heads=32,
+        num_key_value_heads=4,
+        head_dim=128,
+        vocab_size=152064,
+    )
     target_model_config = SimpleNamespace(
         hf_config=SimpleNamespace(
             model_type="qwen3_omni_moe",
             architectures=["Qwen3OmniMoeForConditionalGeneration"],
+            thinker_config=SimpleNamespace(text_config=text_config),
         ),
+        hf_text_config=text_config,
         architectures=["Qwen3OmniMoeForConditionalGeneration"],
-        get_hidden_size=lambda: 4096,
+        get_hidden_size=lambda: 2048,
         get_total_num_hidden_layers=lambda: 48,
         get_vocab_size=lambda: 152064,
     )
     draft_hf_config = SimpleNamespace(
         model_type="qwen3",
-        architectures=["Qwen3DSparkModel"],
+        architectures=["Qwen3OmniDSparkModel"],
+        hidden_size=2048,
+        num_attention_heads=32,
+        num_key_value_heads=4,
+        head_dim=128,
         block_size=7,
-        target_hidden_size=4096,
-        target_layer_ids=[7, 23, 39],
+        target_hidden_size=2048,
+        target_layer_ids=[1, 9, 17, 25, 33],
         use_aux_hidden_state=True,
         markov_rank=64,
+        markov_head_type="vanilla",
+        sample_from_anchor=True,
+        dspark_bonus_anchor=False,
+        enable_confidence_head=False,
+        confidence_head_with_markov=False,
         vocab_size=152064,
         draft_vocab_size=32000,
         mask_token_id=151669,
@@ -1619,26 +1638,51 @@ def _make_qwen3_omni_dspark_configs():
     )
     draft_model_config = SimpleNamespace(
         hf_config=draft_hf_config,
-        architectures=["Qwen3DSparkModel"],
+        architectures=["Qwen3OmniDSparkModel"],
     )
     return target_model_config, draft_model_config
 
 
+@pytest.mark.skip_global_cleanup
 def test_qwen3_omni_dspark_checkpoint_contract_is_accepted():
     target_config, draft_config = _make_qwen3_omni_dspark_configs()
 
     _validate_qwen3_omni_dspark(target_config, draft_config, 7)
 
 
+@pytest.mark.skip_global_cleanup
+def test_qwen3_omni_dspark_rejects_generic_qwen3_architecture():
+    target_config, draft_config = _make_qwen3_omni_dspark_configs()
+    draft_config.hf_config.architectures = ["Qwen3DSparkModel"]
+    draft_config.architectures = ["Qwen3DSparkModel"]
+
+    with pytest.raises(ValueError, match="must be converted first"):
+        _validate_qwen3_omni_dspark(target_config, draft_config, 7)
+
+
+@pytest.mark.skip_global_cleanup
 @pytest.mark.parametrize(
     ("field", "value", "error"),
     [
         ("block_size", 5, "trained block_size"),
-        ("target_hidden_size", 2048, "target_hidden_size"),
+        ("target_hidden_size", 4096, "target_hidden_size"),
+        ("hidden_size", 4096, "draft hidden_size"),
+        ("num_attention_heads", 16, "num_attention_heads"),
+        ("num_key_value_heads", 8, "num_key_value_heads"),
+        ("head_dim", 64, "head_dim"),
         ("target_layer_ids", [7, 48], "zero-based text-layer"),
         ("target_layer_ids", [23, 7], "strictly increasing"),
         ("use_aux_hidden_state", False, "use_aux_hidden_state=true"),
         ("markov_rank", 0, "markov_rank"),
+        ("markov_head_type", "gated", "markov_head_type='vanilla'"),
+        ("sample_from_anchor", False, "sample_from_anchor=true"),
+        ("dspark_bonus_anchor", True, "dspark_bonus_anchor=false"),
+        ("enable_confidence_head", True, "enable_confidence_head=false"),
+        (
+            "confidence_head_with_markov",
+            True,
+            "confidence_head_with_markov=false",
+        ),
         ("vocab_size", 151936, "input vocab_size must be at least"),
     ],
 )
@@ -1654,6 +1698,7 @@ def test_qwen3_omni_dspark_rejects_incompatible_checkpoint_fields(
         _validate_qwen3_omni_dspark(target_config, draft_config, 7)
 
 
+@pytest.mark.skip_global_cleanup
 def test_qwen3_omni_dspark_rejects_mrope_draft_positions():
     target_config, draft_config = _make_qwen3_omni_dspark_configs()
     draft_config.hf_config.rope_parameters["mrope_section"] = [24, 20, 20]
@@ -1662,6 +1707,7 @@ def test_qwen3_omni_dspark_rejects_mrope_draft_positions():
         _validate_qwen3_omni_dspark(target_config, draft_config, 7)
 
 
+@pytest.mark.skip_global_cleanup
 def test_qwen3_omni_dspark_allows_draft_only_noise_token_row():
     target_config, draft_config = _make_qwen3_omni_dspark_configs()
     draft_config.hf_config.vocab_size = 152065

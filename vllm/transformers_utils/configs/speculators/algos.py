@@ -147,9 +147,24 @@ def update_dspark(config_dict: dict, pre_trained_config: dict) -> None:
         drafter. Mapped to both eagle_aux_hidden_state_layer_ids and
         target_layer_ids (DSpark's i-1 layer semantics).
     """
-    pre_trained_config["architectures"] = ["Qwen3DSparkModel"]
-    # Speculators DSpark uses the 1+N fill-in block (anchor is a bonus token).
-    pre_trained_config["dspark_bonus_anchor"] = True
+    architectures = config_dict.get("architectures") or []
+    supported_architectures = {
+        "Qwen3DSparkModel",
+        "Qwen3OmniDSparkModel",
+    }
+    selected_architectures = [
+        architecture
+        for architecture in architectures
+        if architecture in supported_architectures
+    ]
+    # Older msModelSpec checkpoints used the training-only DSparkSpeculator
+    # name. Keep those loadable as Qwen3 while preserving the dedicated Omni
+    # architecture written by new checkpoints.
+    pre_trained_config["architectures"] = selected_architectures or ["Qwen3DSparkModel"]
+
+    sample_from_anchor = config_dict.get("sample_from_anchor", True)
+    pre_trained_config["sample_from_anchor"] = sample_from_anchor
+    pre_trained_config["dspark_bonus_anchor"] = not sample_from_anchor
 
     aux_layer_ids = config_dict["aux_hidden_state_layer_ids"]
     pre_trained_config["eagle_aux_hidden_state_layer_ids"] = aux_layer_ids
@@ -165,6 +180,7 @@ def update_dspark(config_dict: dict, pre_trained_config: dict) -> None:
         "block_size",
         "enable_confidence_head",
         "confidence_head_with_markov",
+        "use_aux_hidden_state",
     ):
         if config_dict.get(key) is not None:
             pre_trained_config[key] = config_dict[key]

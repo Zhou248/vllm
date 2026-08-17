@@ -83,6 +83,7 @@ _QWEN3_OMNI_TARGET_ARCHITECTURES = frozenset(
         "Qwen3OmniMoeThinkerForConditionalGeneration",
     }
 )
+_QWEN3_OMNI_DSPARK_ARCHITECTURE = "Qwen3OmniDSparkModel"
 
 
 def _is_qwen3_omni_target(model_config: ModelConfig) -> bool:
@@ -96,7 +97,26 @@ def _is_qwen3_omni_target(model_config: ModelConfig) -> bool:
 
 def _get_qwen3_omni_text_config(model_config: ModelConfig) -> Any:
     thinker_config = getattr(model_config.hf_config, "thinker_config", None)
-    return getattr(thinker_config, "text_config", None)
+    text_config = getattr(thinker_config, "text_config", None)
+    if text_config is None:
+        text_config = getattr(model_config, "hf_text_config", None)
+    return text_config
+
+
+def _get_attention_head_dim(config: Any) -> int | None:
+    head_dim = getattr(config, "head_dim", None)
+    if head_dim is not None:
+        return head_dim
+    hidden_size = getattr(config, "hidden_size", None)
+    num_attention_heads = getattr(config, "num_attention_heads", None)
+    if (
+        isinstance(hidden_size, int)
+        and isinstance(num_attention_heads, int)
+        and num_attention_heads > 0
+        and hidden_size % num_attention_heads == 0
+    ):
+        return hidden_size // num_attention_heads
+    return None
 
 
 def _get_nested_config_value(config: Any, section: str, name: str) -> Any:
@@ -125,8 +145,10 @@ def _validate_qwen3_omni_dspark(
     """Validate the checkpoint contract for a Qwen3-Omni DSpark drafter.
 
     The Omni target supplies multimodal information through auxiliary text-model
-    hidden states. The standalone Qwen3 drafter deliberately uses logical 1-D
-    positions; it must not copy the target's MRoPE configuration.
+    hidden states. The standalone drafter deliberately uses logical 1-D
+    positions; it must not copy the target's MRoPE configuration. Its attention
+    head geometry must match the target thinker so compiler and KV-cache metadata
+    cannot silently diverge.
     """
     if not _is_qwen3_omni_target(target_model_config):
         return
@@ -134,11 +156,12 @@ def _validate_qwen3_omni_dspark(
     draft_hf_config = draft_model_config.hf_config
     draft_architectures = set(getattr(draft_model_config, "architectures", ()) or ())
     draft_architectures.update(getattr(draft_hf_config, "architectures", ()) or ())
-    if "Qwen3DSparkModel" not in draft_architectures:
+    if _QWEN3_OMNI_DSPARK_ARCHITECTURE not in draft_architectures:
         raise ValueError(
             "Qwen3-Omni DSpark requires a standalone draft checkpoint with "
-            "architectures=['Qwen3DSparkModel']; DSpark weights are not embedded "
-            "in the Qwen3-Omni target checkpoint."
+            f"architectures=['{_QWEN3_OMNI_DSPARK_ARCHITECTURE}']; generic "
+            "Qwen3DSparkModel checkpoints must be converted first. DSpark weights "
+            "are not embedded in the Qwen3-Omni target checkpoint."
         )
 
     block_size = _get_qwen3_dspark_value(draft_hf_config, "block_size")
@@ -160,6 +183,10 @@ def _validate_qwen3_omni_dspark(
         )
 
     target_text_config = _get_qwen3_omni_text_config(target_model_config)
+    if target_text_config is None:
+        raise ValueError(
+            "Qwen3-Omni DSpark could not resolve the target thinker text_config."
+        )
     target_hidden_size = getattr(
         target_text_config,
         "hidden_size",
@@ -172,6 +199,49 @@ def _validate_qwen3_omni_dspark(
             f"text hidden size ({target_hidden_size}); got "
             f"{draft_target_hidden_size}."
         )
+    draft_hidden_size = getattr(draft_hf_config, "hidden_size", None)
+    if draft_hidden_size != target_hidden_size:
+        raise ValueError(
+            "Qwen3-Omni DSpark draft hidden_size must match the target thinker "
+            f"hidden size ({target_hidden_size}); got {draft_hidden_size}. The "
+            "current training and NPU runtime contract uses equal hidden sizes."
+        )
+
+    target_attention = {
+        "num_attention_heads": getattr(target_text_config, "num_attention_heads", None),
+        "num_key_value_heads": getattr(
+            target_text_config,
+            "num_key_value_heads",
+            getattr(target_text_config, "num_attention_heads", None),
+        ),
+        "head_dim": _get_attention_head_dim(target_text_config),
+    }
+    draft_attention = {
+        "num_attention_heads": getattr(draft_hf_config, "num_attention_heads", None),
+        "num_key_value_heads": getattr(
+            draft_hf_config,
+            "num_key_value_heads",
+            getattr(draft_hf_config, "num_attention_heads", None),
+        ),
+        "head_dim": _get_attention_head_dim(draft_hf_config),
+    }
+    for name, target_value in target_attention.items():
+        if (
+            not isinstance(target_value, int)
+            or isinstance(target_value, bool)
+            or target_value <= 0
+        ):
+            raise ValueError(
+                "Qwen3-Omni DSpark requires a positive integer "
+                f"{name} in the target thinker text_config; got {target_value}."
+            )
+        draft_value = draft_attention[name]
+        if draft_value != target_value:
+            raise ValueError(
+                f"Qwen3-Omni DSpark draft {name} must match the target thinker "
+                f"value ({target_value}); got {draft_value}. Convert or train a "
+                "Qwen3OmniDSparkModel checkpoint with matching attention geometry."
+            )
 
     target_layer_ids = _get_nested_config_value(
         draft_hf_config, "dflash_config", "target_layer_ids"
@@ -214,8 +284,8 @@ def _validate_qwen3_omni_dspark(
     if use_aux_hidden_state is not True:
         raise ValueError(
             "Qwen3-Omni DSpark requires an explicit "
-            "use_aux_hidden_state=true because the draft hidden size may differ "
-            "from the target text hidden size."
+            "use_aux_hidden_state=true because Omni conditioning is supplied "
+            "through captured thinker hidden states."
         )
 
     markov_rank = getattr(draft_hf_config, "markov_rank", None)
@@ -227,6 +297,29 @@ def _validate_qwen3_omni_dspark(
         raise ValueError(
             "Qwen3-Omni DSpark requires a positive integer markov_rank in the "
             "draft config."
+        )
+    markov_head_type = getattr(draft_hf_config, "markov_head_type", None)
+    if markov_head_type != "vanilla":
+        raise ValueError(
+            "Qwen3-Omni DSpark currently requires markov_head_type='vanilla'; "
+            f"got {markov_head_type!r}."
+        )
+
+    sample_from_anchor = getattr(draft_hf_config, "sample_from_anchor", True)
+    bonus_anchor = getattr(draft_hf_config, "dspark_bonus_anchor", False)
+    if sample_from_anchor is not True or bonus_anchor is not False:
+        raise ValueError(
+            "Qwen3-Omni DSpark requires sample_from_anchor=true and "
+            "dspark_bonus_anchor=false so num_speculative_tokens equals the "
+            "trained block_size."
+        )
+    if getattr(draft_hf_config, "enable_confidence_head", False) is not False or (
+        getattr(draft_hf_config, "confidence_head_with_markov", False) is not False
+    ):
+        raise ValueError(
+            "Qwen3-Omni DSpark requires enable_confidence_head=false and "
+            "confidence_head_with_markov=false because the inference runtime "
+            "does not consume confidence-head outputs."
         )
 
     target_vocab_size = getattr(
@@ -1105,6 +1198,8 @@ class SpeculativeConfig:
                 elif (
                     "dspark" in self.draft_model_config.model.lower()
                     or "Qwen3DSparkModel" in self.draft_model_config.architectures
+                    or _QWEN3_OMNI_DSPARK_ARCHITECTURE
+                    in self.draft_model_config.architectures
                     or "Gemma4DSparkModel" in self.draft_model_config.architectures
                 ):
                     self.method = "dspark"
@@ -1156,6 +1251,8 @@ class SpeculativeConfig:
 
                 if self.method == "dspark" and (
                     "Qwen3DSparkModel" not in self.draft_model_config.architectures
+                    and _QWEN3_OMNI_DSPARK_ARCHITECTURE
+                    not in self.draft_model_config.architectures
                     and "Gemma4DSparkModel" not in self.draft_model_config.architectures
                 ):
                     # DeepSeek-V4 DSpark reuses the full DeepSeek-V4 config

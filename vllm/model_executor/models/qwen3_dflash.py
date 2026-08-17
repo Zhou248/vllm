@@ -250,6 +250,8 @@ class DFlashQwen3Attention(nn.Module):
 
 
 class DFlashQwen3DecoderLayer(nn.Module):
+    attention_cls = DFlashQwen3Attention
+
     def __init__(
         self,
         vllm_config: VllmConfig,
@@ -277,7 +279,7 @@ class DFlashQwen3DecoderLayer(nn.Module):
         # non-causal) from the draft config.
         sliding_window, causal = _resolve_layer_attention(config, layer_idx)
 
-        self.self_attn = DFlashQwen3Attention(
+        self.self_attn = self.attention_cls(
             hidden_size=self.hidden_size,
             num_heads=config.num_attention_heads,
             max_position=config.max_position_embeddings,
@@ -330,6 +332,8 @@ class DFlashQwen3DecoderLayer(nn.Module):
 
 @support_torch_compile
 class DFlashQwen3Model(nn.Module):
+    decoder_layer_cls = DFlashQwen3DecoderLayer
+
     hf_to_vllm_mapper = WeightsMapper(
         orig_to_new_substr={"midlayer.": "layers.0."},
         orig_to_new_stacked={
@@ -385,7 +389,7 @@ class DFlashQwen3Model(nn.Module):
 
         self.layers = nn.ModuleList(
             [
-                DFlashQwen3DecoderLayer(
+                self.decoder_layer_cls(
                     current_vllm_config,
                     config=self.config,
                     layer_idx=layer_idx,
