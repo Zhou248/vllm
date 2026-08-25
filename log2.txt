@@ -1,0 +1,1033 @@
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return _aot_stage2b_compile_forward_or_inference(
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 2300, in _aot_stage2b_compile_forward_or_inference
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     compiled_fw_func = compiler(fw_module, adjusted_flat_args)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 121, in wrapped
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     with DebugContext(phase):
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 91, in __exit__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     raise exc_val.with_traceback(exc_tb)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 122, in wrapped
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return compiler(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 772, in _wrap_custom_attr_compiler
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 727, in wrapped_compiler
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 46, in wapper
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     raise type(e)("\n".join(msg))
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return self._get_compiled_gm(gm, example_inputs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     pattern_pass_manager.apply_pass(graph_module)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     self.pass_dict.apply(fx_graph)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                                       ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return make_fx_tracer.trace(f, *args)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return self._trace_inner(f, *args)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     t = dispatch_trace(
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]         ^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return disable_fn(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     (self.create_arg(fn(*args)),),
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]                      ^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     out = f(*tensors)  # type:ignore[call-arg]
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]           ^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "<string>", line 1, in <lambda>
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return search_fn(*args_new[len(args_new) - len(args) :])
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return handle_torch_function(
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return torch._VF.split_with_sizes(
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     out = func(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return self._op(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return self.dispatch(func, types, args, kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     output = self._dispatch_impl(func, types, args, kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     decomposition_table[func](*args, **kwargs)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     torch._check_with(
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007]     raise error_type(message_evaluated)
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] 
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] 
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] [ERROR] 2026-08-25-16:33:12 (PID:735030, Device:0, RankID:0) ERR03001 GRAPH invalid parameter
+(Worker_TP0_EP0 pid=735030) ERROR 08-25 16:33:12 [multiproc_executor.py:1007] 
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] EngineCore failed to start.
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] Traceback (most recent call last):
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/engine/core.py", line 1299, in run_engine_core
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/engine/core.py", line 1065, in __init__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     super().__init__(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/engine/core.py", line 136, in __init__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     kv_cache_config = self._initialize_kv_caches(vllm_config)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/engine/core.py", line 286, in _initialize_kv_caches
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     available_gpu_memory = self.model_executor.determine_available_memory()
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/executor/abstract.py", line 147, in determine_available_memory
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self.collective_rpc("determine_available_memory")
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 405, in collective_rpc
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return future if non_block else future.result()
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                                     ^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 91, in result
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return super().result()
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self.__get_result()
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     raise self._exception
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 95, in _wait_for_response
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     response = self.aggregate(self.get_response())
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                               ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 394, in get_response
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     raise RuntimeError(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] RuntimeError: Worker failed with error 'Split sizes add up to 2560 but got the tensor's size of 5120
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] Traceback (most recent call last):
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self._get_compiled_gm(gm, example_inputs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     pattern_pass_manager.apply_pass(graph_module)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     self.pass_dict.apply(fx_graph)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                                       ^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return make_fx_tracer.trace(f, *args)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self._trace_inner(f, *args)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     t = dispatch_trace(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]         ^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return disable_fn(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return fn(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return fn(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     (self.create_arg(fn(*args)),),
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]                      ^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     out = f(*tensors)  # type:ignore[call-arg]
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]           ^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "<string>", line 1, in <lambda>
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return search_fn(*args_new[len(args_new) - len(args) :])
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return handle_torch_function(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return torch._VF.split_with_sizes(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return fn(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     out = func(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]           ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self._op(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return fn(*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self.dispatch(func, types, args, kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     output = self._dispatch_impl(func, types, args, kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     decomposition_table[func](*args, **kwargs)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     torch._check_with(
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330]     raise error_type(message_evaluated)
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] 
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] 
+(EngineCore pid=734988) ERROR 08-25 16:33:12 [core.py:1330] [ERROR] 2026-08-25-16:33:12 (PID:735030, Device:0, RankID:0) ERR03001 GRAPH invalid parameter', please check the stack trace above for the root cause
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] WorkerProc hit an exception.
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._get_compiled_gm(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     pattern_pass_manager.apply_pass(graph_module)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.pass_dict.apply(fx_graph)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                       ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return make_fx_tracer.trace(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._trace_inner(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     t = dispatch_trace(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]         ^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return disable_fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     (self.create_arg(fn(*args)),),
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = f(*tensors)  # type:ignore[call-arg]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "<string>", line 1, in <lambda>
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return search_fn(*args_new[len(args_new) - len(args) :])
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return handle_torch_function(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return torch._VF.split_with_sizes(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._op(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.dispatch(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = self._dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     decomposition_table[func](*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     torch._check_with(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise error_type(message_evaluated)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] During handling of the above exception, another exception occurred:
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 999, in worker_busy_loop
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/worker.py", line 556, in determine_available_memory
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.model_runner.profile_run()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/model_runner_v1.py", line 3423, in profile_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     super().profile_run()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/v1/worker/gpu_model_runner.py", line 6424, in profile_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     hidden_states, last_hidden_states = self._dummy_run(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                         ^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/model_runner_v1.py", line 3376, in _dummy_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.drafter.dummy_run(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/spec_decode/dspark_proposer.py", line 392, in dummy_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.model(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._call_impl(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return forward_call(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/model_executor/models/qwen3_dflash.py", line 705, in forward
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.model(input_ids, positions, inputs_embeds)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/decorators.py", line 663, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.aot_compiled_fn = self.aot_compile(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/wrapper.py", line 169, in aot_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._compiled_callable.aot_compile((args, kwargs))
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 832, in aot_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_compile_fullgraph(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/aot_compile.py", line 239, in aot_compile_fullgraph
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = backend(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 2509, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.compiler_fn(model_, inputs_, **self.kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/contextlib.py", line 81, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwds)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 1222, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     PiecewiseCompileInterpreter(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 728, in run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return super().run(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/interpreter.py", line 200, in run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.env[node] = self.run_node(node)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/interpreter.py", line 295, in run_node
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return getattr(self, n.op)(n.target, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 755, in call_module
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     piecewise_backend = PiecewiseBackend(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                         ^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/piecewise_backend.py", line 190, in __init__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.compile_all_ranges()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/piecewise_backend.py", line 266, in compile_all_ranges
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     range_entry.runnable = self.vllm_backend.compiler_manager.compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 353, in compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_graph, handle = self.compiler.compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                              ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 290, in compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return npugraph_ex_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 206, in npugraph_ex_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = make_graph_return_tuple(graph, example_inputs, backend)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 2861, in make_graph_return_tuple
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = compile_gm(gm, inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 820, in _npu_backend
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _compile_graph_with_aot(gm, compiler, example_inputs, compiler_config, decompositions, is_cache=False)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 921, in _compile_graph_with_aot
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_module_simplified(gm, example_inputs, **aot_kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 1115, in aot_module_simplified
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn, _ = aot_stage2_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 357, in aot_stage2_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_stage2_inference(aot_state, aot_graph_capture)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 431, in aot_stage2_inference
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fw = _aot_stage2b_inference_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 400, in _aot_stage2b_inference_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _aot_stage2b_compile_forward_or_inference(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 2300, in _aot_stage2b_compile_forward_or_inference
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fw_func = compiler(fw_module, adjusted_flat_args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 121, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     with DebugContext(phase):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 91, in __exit__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise exc_val.with_traceback(exc_tb)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 122, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 772, in _wrap_custom_attr_compiler
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 727, in wrapped_compiler
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 46, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise type(e)("\n".join(msg))
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._get_compiled_gm(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     pattern_pass_manager.apply_pass(graph_module)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.pass_dict.apply(fx_graph)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                       ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return make_fx_tracer.trace(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._trace_inner(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     t = dispatch_trace(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]         ^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return disable_fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     (self.create_arg(fn(*args)),),
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = f(*tensors)  # type:ignore[call-arg]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "<string>", line 1, in <lambda>
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return search_fn(*args_new[len(args_new) - len(args) :])
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return handle_torch_function(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return torch._VF.split_with_sizes(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._op(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.dispatch(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = self._dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     decomposition_table[func](*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     torch._check_with(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise error_type(message_evaluated)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] [ERROR] 2026-08-25-16:33:13 (PID:735031, Device:1, RankID:1) ERR03001 GRAPH invalid parameter
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._get_compiled_gm(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     pattern_pass_manager.apply_pass(graph_module)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.pass_dict.apply(fx_graph)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                       ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return make_fx_tracer.trace(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._trace_inner(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     t = dispatch_trace(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]         ^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return disable_fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     (self.create_arg(fn(*args)),),
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = f(*tensors)  # type:ignore[call-arg]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "<string>", line 1, in <lambda>
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return search_fn(*args_new[len(args_new) - len(args) :])
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return handle_torch_function(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return torch._VF.split_with_sizes(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._op(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.dispatch(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = self._dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     decomposition_table[func](*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     torch._check_with(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise error_type(message_evaluated)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] During handling of the above exception, another exception occurred:
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/v1/executor/multiproc_executor.py", line 999, in worker_busy_loop
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/worker.py", line 556, in determine_available_memory
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.model_runner.profile_run()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/model_runner_v1.py", line 3423, in profile_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     super().profile_run()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/v1/worker/gpu_model_runner.py", line 6424, in profile_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     hidden_states, last_hidden_states = self._dummy_run(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                         ^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/worker/model_runner_v1.py", line 3376, in _dummy_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.drafter.dummy_run(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/spec_decode/dspark_proposer.py", line 392, in dummy_run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.model(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._call_impl(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return forward_call(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/model_executor/models/qwen3_dflash.py", line 705, in forward
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.model(input_ids, positions, inputs_embeds)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/decorators.py", line 663, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.aot_compiled_fn = self.aot_compile(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/wrapper.py", line 169, in aot_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._compiled_callable.aot_compile((args, kwargs))
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 832, in aot_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_compile_fullgraph(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/aot_compile.py", line 239, in aot_compile_fullgraph
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = backend(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 2509, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.compiler_fn(model_, inputs_, **self.kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/contextlib.py", line 81, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwds)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 1222, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     PiecewiseCompileInterpreter(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 728, in run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return super().run(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/interpreter.py", line 200, in run
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.env[node] = self.run_node(node)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/interpreter.py", line 295, in run_node
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return getattr(self, n.op)(n.target, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 755, in call_module
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     piecewise_backend = PiecewiseBackend(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                         ^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/piecewise_backend.py", line 190, in __init__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.compile_all_ranges()
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/piecewise_backend.py", line 266, in compile_all_ranges
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     range_entry.runnable = self.vllm_backend.compiler_manager.compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm/vllm/compilation/backends.py", line 353, in compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_graph, handle = self.compiler.compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                              ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 290, in compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return npugraph_ex_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 206, in npugraph_ex_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = make_graph_return_tuple(graph, example_inputs, backend)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/compile_fx.py", line 2861, in make_graph_return_tuple
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn = compile_gm(gm, inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 820, in _npu_backend
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _compile_graph_with_aot(gm, compiler, example_inputs, compiler_config, decompositions, is_cache=False)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 921, in _compile_graph_with_aot
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_module_simplified(gm, example_inputs, **aot_kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/aot_autograd.py", line 1115, in aot_module_simplified
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fn, _ = aot_stage2_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 357, in aot_stage2_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return aot_stage2_inference(aot_state, aot_graph_capture)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 431, in aot_stage2_inference
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fw = _aot_stage2b_inference_compile(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 400, in _aot_stage2b_inference_compile
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _aot_stage2b_compile_forward_or_inference(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_functorch/_aot_autograd/graph_compile.py", line 2300, in _aot_stage2b_compile_forward_or_inference
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_fw_func = compiler(fw_module, adjusted_flat_args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 121, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     with DebugContext(phase):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 91, in __exit__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise exc_val.with_traceback(exc_tb)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 122, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 772, in _wrap_custom_attr_compiler
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 727, in wrapped_compiler
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return compiler(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 46, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise type(e)("\n".join(msg))
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] Traceback (most recent call last):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/error_code.py", line 43, in wapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 578, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._get_compiled_gm(gm, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/compiler_interface.py", line 180, in patched_get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     compiled_gm = _original_get_compiled_gm(self, graph, example_inputs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 602, in _get_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return _CompiledFxGraph(self._gen_compiled_gm(gm, example_inputs, observer), self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 638, in _gen_compiled_gm
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     optimized_gm = _optimize_fx(mutable_gm, self.config, observer)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/npu_fx_compiler.py", line 323, in _optimize_fx
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     observer.apply_gm_pass(_apply_pattern_passes, "apply_pattern_passes")
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_transform_observer.py", line 41, in apply_gm_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     res = pass_fn(self.gm, self.example_inputs, self.config)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/_utils/graph_utils.py", line 230, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_util.py", line 35, in _apply_pattern_passes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     pattern_pass_manager.apply_pass(graph_module)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch_npu/dynamo/npugraph_ex/patterns/pattern_pass_manager.py", line 125, in apply_pass
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     self.pass_dict.apply(fx_graph)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2051, in apply
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     if is_match(m) and guard_or_false(entry.extra_check(m)):
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                                       ^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1517, in check_fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     specific_graph = trace_fn(search_fn_new, sym_args + args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 2190, in fwd_only
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     gm = make_fx(fn, decompositions, tracing_mode="real")(*args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2701, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return make_fx_tracer.trace(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2626, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._trace_inner(f, *args)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 2588, in _trace_inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     t = dispatch_trace(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]         ^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_compile.py", line 54, in inner
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return disable_fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1460, in dispatch_trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     graph = tracer.trace(root, concrete_args)  # type: ignore[arg-type]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1181, in _fn
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/_symbolic_trace.py", line 879, in trace
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     (self.create_arg(fn(*args)),),
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]                      ^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1526, in wrapped
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = f(*tensors)  # type:ignore[call-arg]
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "<string>", line 1, in <lambda>
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_inductor/pattern_matcher.py", line 1513, in search_fn_new
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return search_fn(*args_new[len(args_new) - len(args) :])
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/home/z00909726/vllm-ascend/vllm_ascend/compilation/passes/qknorm_rope_fusion_pass.py", line 60, in pattern
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1054, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return handle_torch_function(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/overrides.py", line 1740, in handle_torch_function
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     result = mode.__torch_function__(public_api, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1577, in __torch_function__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_tensor.py", line 1066, in split
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return torch._VF.split_with_sizes(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1703, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return proxy_call(self, func, self.pre_dispatch, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/fx/experimental/proxy_tensor.py", line 1145, in proxy_call
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     out = func(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]           ^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_ops.py", line 819, in __call__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._op(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/utils/_stats.py", line 29, in wrapper
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return fn(*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1397, in __torch_dispatch__
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self.dispatch(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2155, in dispatch
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     return self._cached_dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 1544, in _cached_dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     output = self._dispatch_impl(func, types, args, kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_subclasses/fake_tensor.py", line 2707, in _dispatch_impl
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     decomposition_table[func](*args, **kwargs)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/_refs/__init__.py", line 4359, in split_with_sizes
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     torch._check_with(
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]   File "/usr/local/python3.11.10/lib/python3.11/site-packages/torch/__init__.py", line 1714, in _check_with
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007]     raise error_type(message_evaluated)
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] ValueError: Split sizes add up to 2560 but got the tensor's size of 5120
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] [ERROR] 2026-08-25-16:33:13 (PID:735031, Device:1, RankID:1) ERR03001 GRAPH invalid parameter
+(Worker_TP1_EP1 pid=735031) ERROR 08-25 16:33:13 [multiproc_executor.py:1007] 
