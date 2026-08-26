@@ -15,6 +15,7 @@ vLLM 或 vLLM-Ascend 执行 Qwen3-VL 多模态任务。
 - Markov rank：256
 - mask token id：151669
 - 完整词表：151936，target embedding 和 LM head 在运行时共享
+- target 保持 M-RoPE；draft 自动使用等价的逻辑 1-D RoPE
 
 vLLM 会将训练侧的 `Qwen3VLForConditionalGenerationDFlash` 和嵌套
 `text_config`/`dflash_config` 自动规范化为独立的
