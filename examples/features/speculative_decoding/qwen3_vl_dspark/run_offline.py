@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
-"""Run one Qwen3-VL-30B-A3B multimodal request with DSpARK enabled."""
+"""Run one Qwen3-VL multimodal request with DSpARK enabled."""
 
 from __future__ import annotations
 
@@ -17,21 +17,19 @@ if (REPO_ROOT / "vllm").is_dir():
 from vllm import LLM, SamplingParams  # noqa: E402
 from vllm.multimodal.utils import fetch_image  # noqa: E402
 
-DEFAULT_DRAFT_MODEL = (
-    EXAMPLE_DIR / "artifacts" / "Qwen3-VL-30B-A3B-Instruct-DSpARK-fixture"
-)
+DEFAULT_DRAFT_MODEL = EXAMPLE_DIR / "artifacts" / "Qwen3-VL-DSpARK-config-fixture"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--target-model",
-        default="Qwen/Qwen3-VL-30B-A3B-Instruct",
+        default="Qwen/Qwen3-VL-2B-Instruct",
     )
     parser.add_argument("--draft-model", type=Path, default=DEFAULT_DRAFT_MODEL)
-    parser.add_argument("--tensor-parallel-size", type=int, default=4)
+    parser.add_argument("--tensor-parallel-size", type=int, default=2)
     parser.add_argument("--draft-tensor-parallel-size", type=int, default=1)
-    parser.add_argument("--num-speculative-tokens", type=int, default=4)
+    parser.add_argument("--num-speculative-tokens", type=int, default=16)
     parser.add_argument("--max-model-len", type=int, default=4096)
     parser.add_argument("--max-tokens", type=int, default=32)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.9)
