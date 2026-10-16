@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     import numpy as np
     import numpy.typing as npt
     import torch
-
     from vllm.distributed.ec_transfer.ec_connector.base import ECConnectorMetadata
     from vllm.distributed.kv_transfer.kv_connector.v1.base import KVConnectorMetadata
     from vllm.lora.request import LoRARequest
@@ -19,8 +18,10 @@ if TYPE_CHECKING:
     from vllm.pooling_params import PoolingParams
     from vllm.sampling_params import SamplingParams
     from vllm.v1.core.kv_cache_utils import KVCacheBlockCopy
-    from vllm.v1.core.layered_prefill import LayeredPrefillPlan
     from vllm.v1.request import Request
+
+    from vllm.v1.core.layered_prefill import LayeredPrefillPlan
+    from vllm.v1.worker.gpu.pp_utils import RingStepPlan
 else:
     ECConnectorMetadata = object
     KVConnectorMetadata = object
@@ -31,6 +32,7 @@ else:
     PoolingParams = object
     SamplingParams = object
     Request = object
+    RingStepPlan = object
 
 
 @dataclass
@@ -263,6 +265,9 @@ class SchedulerOutput:
     # Optional layer-group execution plan. ``None`` preserves the regular
     # token-progress scheduler and is the default for every model.
     layered_prefill_plan: "LayeredPrefillPlan | None" = None
+
+    # One collective participation plan shared by every MRV2 PP rank.
+    ring_step_plan: "RingStepPlan | None" = None
 
     # Producer partial-tail offload hand-off for external KV connectors:
     # {request_id: [(group_id, block_id, boundary_tokens), ...]} pointing at
