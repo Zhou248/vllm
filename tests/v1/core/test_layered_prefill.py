@@ -231,9 +231,8 @@ def test_reset_clears_cached_tokens():
 
 
 def test_eligibility_allows_prefix_hit_on_layered_request():
-    from vllm.v1.request import RequestStatus
-
     from vllm.v1.core.sched.scheduler import Scheduler
+    from vllm.v1.request import RequestStatus
 
     sampling = SimpleNamespace(
         logprobs=None, prompt_logprobs=None, logprob_token_ids=None
@@ -620,7 +619,6 @@ def test_merge_consecutive_groups_does_not_cross_pp_stage():
 
 def test_merge_single_group_skips_pp_owner_lookup(monkeypatch):
     import vllm.distributed.utils as distributed_utils
-
     from vllm.v1.core.layered_prefill import merge_consecutive_layer_groups
 
     def unexpected_owner_lookup(*_args, **_kwargs):
@@ -1070,6 +1068,616 @@ def _add_ready_decode(scheduler):
     return request
 
 
+def _boundary_scheduler(groups=8):
+    scheduler = _pp2_v2_layered_scheduler(groups)
+    decode = _add_ready_decode(scheduler)
+    _enable_layered_scheduler(
+        scheduler, allowed_num_groups=[groups], boundary_policy="pp_transition"
+    )
+    # The helper swaps the policy after initialization; production sets this
+    # fence when constructing the scheduler with boundary_policy enabled.
+    scheduler.defer_block_free = True
+    return scheduler, decode
+
+
+@pytest.mark.parametrize("groups", [4, 8, 16])
+def test_boundary_tail_crosses_stages_in_one_step_and_commits_once(groups):
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler(groups)
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=8, req_ids=["boundary"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    plans = []
+    while True:
+        output = scheduler.schedule()
+        plan = output.layered_prefill_plan
+        assert plan is not None
+        plans.append(plan)
+        assert plan.query_tokens[prefill.request_id] == 8
+        assert prefill.num_computed_tokens == (8 if plan.is_final_group else 0)
+        runner_output = _empty_runner_output(list(output.num_scheduled_tokens))
+        if plan.is_final_group:
+            runner_output.sampled_token_ids = [[1000] for _ in runner_output.req_ids]
+        scheduler.update_from_output(output, runner_output)
+        if plan.is_final_group:
+            break
+    assert (plans[0].group_start, plans[0].group_end) == (0, 16 + 32 // groups)
+    assert plans[0].resume_group_id == groups // 2 + 1
+    assert [
+        layer for p in plans for layer in range(p.group_start, p.group_end)
+    ] == list(range(32))
+    assert sum(p.commit_tokens[prefill.request_id] for p in plans) == 8
+    assert not prefill.layered_prefill_enabled
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_head_exits_across_stages_with_successor():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, decode = _boundary_scheduler()
+    pure_decode = scheduler.schedule()
+    assert pure_decode.layered_prefill_plan is None
+    scheduler.update_from_output(pure_decode, _sampled_runner_output(decode.request_id))
+    requests = create_requests(
+        num_requests=2, num_tokens=8, req_ids=["head", "successor"], max_tokens=4
+    )
+    for request in requests:
+        scheduler.add_request(request)
+    intervals = []
+    while True:
+        output = scheduler.schedule()
+        plan = output.layered_prefill_plan
+        assert plan is not None and plan.boundary_mode == "head"
+        assert "successor" not in output.num_scheduled_tokens
+        intervals.append((plan.group_start, plan.group_end))
+        scheduler.update_from_output(
+            output, _empty_runner_output(list(output.num_scheduled_tokens))
+        )
+        if plan.is_final_group:
+            break
+    assert intervals == [(0, 4), (4, 8), (8, 12), (12, 32)]
+
+
+@pytest.mark.parametrize("groups", [4, 8, 16])
+@pytest.mark.parametrize("arrive_before_stage_end", [False, True])
+def test_boundary_isolated_rechecks_successor_at_stage_end_at_depth_two(
+    groups, arrive_before_stage_end
+):
+    """A newly visible P can shorten isolated traversal before PP0 exits."""
+    from collections import deque
+
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler(groups)
+    pure_decode = scheduler.schedule()
+    scheduler.update_from_output(pure_decode, _wavefront_output(pure_decode))
+    active, successor = create_requests(
+        num_requests=2, num_tokens=8, req_ids=["isolated", "late_p"], max_tokens=4
+    )
+    scheduler.add_request(active)
+    queue = deque()
+    plans = []
+    added_successor = False
+    while True:
+        step = scheduler.schedule()
+        plan = step.layered_prefill_plan
+        assert plan is not None and plan.boundary_mode == "isolated"
+        assert successor.request_id not in step.num_scheduled_tokens
+        assert plan.query_tokens == {active.request_id: 8}
+        plans.append(plan)
+        queue.append(step)
+        if len(queue) == 2:
+            completed = queue.popleft()
+            scheduler.update_from_output(completed, _wavefront_output(completed))
+        if not added_successor and (
+            arrive_before_stage_end or plan.group_end == 16
+        ):
+            scheduler.max_num_running_reqs = 3
+            scheduler.add_request(successor)
+            added_successor = True
+        if plan.is_final_group:
+            break
+    assert added_successor
+    assert len(plans) == (groups // 2 if arrive_before_stage_end else groups)
+    assert [
+        layer for plan in plans for layer in range(plan.group_start, plan.group_end)
+    ] == list(range(32))
+    assert sum(plan.commit_tokens[active.request_id] for plan in plans) == 8
+    if arrive_before_stage_end:
+        assert plans[-1].group_start < 16 < plans[-1].group_end
+    else:
+        assert all(
+            plan.group_end <= 16 or plan.group_start >= 16 for plan in plans
+        )
+
+    final_seq = scheduler._boundary_final_step_seq
+    assert scheduler.processed_step_seq == final_seq - 1
+    assert active.num_in_flight_tokens == 8
+    native = scheduler.schedule()
+    queue.append(native)
+    assert len(queue) == 2
+    assert native.layered_prefill_plan is None
+    assert native.num_scheduled_tokens[successor.request_id] == 8
+    assert active.request_id not in native.num_scheduled_tokens
+    assert scheduler._boundary_request_id == active.request_id
+    assert scheduler._boundary_mode == "isolated"
+    assert scheduler._boundary_final_step_seq == final_seq
+    assert scheduler.processed_step_seq < final_seq
+    while queue:
+        completed = queue.popleft()
+        scheduler.update_from_output(completed, _wavefront_output(completed))
+    assert active.num_computed_tokens == successor.num_computed_tokens == 8
+    assert active.num_in_flight_tokens == successor.num_in_flight_tokens == 0
+    assert active.num_output_tokens == successor.num_output_tokens == 1
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_steady_chunk_uses_regular_admission():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler()
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=8192, req_ids=["steady"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    output = scheduler.schedule()
+    assert output.layered_prefill_plan is None
+    assert prefill.num_computed_tokens == output.num_scheduled_tokens["steady"]
+    assert not prefill.layered_prefill_enabled
+    assert scheduler.boundary_stats["regular_prefill"] == 1
+
+
+def test_boundary_can_start_after_retired_native_token_chunk():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler()
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=5000, req_ids=["chunked"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    native = scheduler.schedule()
+    assert native.layered_prefill_plan is None
+    origin = prefill.num_computed_tokens
+    scheduler.update_from_output(
+        native, _empty_runner_output(list(native.num_scheduled_tokens))
+    )
+    boundary = scheduler.schedule()
+    plan = boundary.layered_prefill_plan
+    assert plan is not None and plan.boundary_mode == "tail"
+    assert plan.cached_tokens == {"chunked": origin}
+    assert plan.query_tokens == {"chunked": 5000 - origin}
+    assert prefill.num_computed_tokens == origin
+
+
+def test_boundary_queue_depth_two_keeps_inflight_native_tail_native():
+    """Submit both native chunks before retiring the oldest, like EngineCore."""
+    from collections import deque
+
+    from tests.v1.core.utils import create_requests
+
+    scheduler, decode = _boundary_scheduler()
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=5000, req_ids=["queued_native"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    queue = deque(maxlen=2)
+    first = scheduler.schedule()
+    queue.append(first)
+    origin = prefill.num_computed_tokens
+    assert 0 < origin < prefill.num_prompt_tokens
+    assert prefill.num_in_flight_tokens == origin
+    first_data = next(
+        req for req in first.scheduled_new_reqs if req.req_id == prefill.request_id
+    )
+    # The ring carries every batch row, including nonsampling placeholders.
+    # Only the per-request cursor predicate determines whether P can sample.
+    assert (
+        first_data.num_computed_tokens + first.num_scheduled_tokens[prefill.request_id]
+        < prefill.num_prompt_tokens
+    )
+
+    # Do not consume first's result before scheduling the tail: this is the
+    # queue-depth-two case that deliberately misses the boundary optimization.
+    tail = scheduler.schedule()
+    queue.append(tail)
+    assert len(queue) == 2
+    assert first.layered_prefill_plan is None
+    assert tail.layered_prefill_plan is None
+    assert tail.num_scheduled_tokens[prefill.request_id] == 5000 - origin
+    cached = tail.scheduled_cached_reqs
+    assert (
+        cached.num_computed_tokens[cached.req_ids.index(prefill.request_id)] == origin
+    )
+    assert origin + tail.num_scheduled_tokens[prefill.request_id] == 5000
+    assert scheduler.boundary_stats["fallback_request_or_inflight"] == 1
+    assert prefill.num_computed_tokens == prefill.num_in_flight_tokens == 5000
+    assert scheduler._boundary_request_id is None
+
+    completed = queue.popleft()
+    result = _empty_runner_output(list(completed.num_scheduled_tokens))
+    result.sampled_token_ids = [
+        [1001] if rid == decode.request_id else [] for rid in result.req_ids
+    ]
+    scheduler.update_from_output(completed, result)
+    assert prefill.num_computed_tokens == 5000
+    assert prefill.num_in_flight_tokens == 5000 - origin
+    assert prefill.num_output_tokens == 0
+    assert not prefill.layered_prefill_enabled
+
+    completed = queue.popleft()
+    result = _empty_runner_output(list(completed.num_scheduled_tokens))
+    result.sampled_token_ids = [[1002] for _ in result.req_ids]
+    scheduler.update_from_output(completed, result)
+    assert prefill.num_computed_tokens == 5000
+    assert prefill.num_in_flight_tokens == 0
+    assert prefill.num_output_tokens == 1
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_no_decode_and_empty_steps_do_not_create_head_history():
+    from tests.v1.core.utils import create_requests
+
+    scheduler = _pp2_v2_layered_scheduler()
+    _enable_layered_scheduler(scheduler, boundary_policy="pp_transition")
+    assert scheduler.schedule().total_num_scheduled_tokens == 0
+    assert not scheduler._boundary_decode_only
+    (prefill,) = create_requests(num_requests=1, num_tokens=8)
+    scheduler.add_request(prefill)
+    assert scheduler.schedule().layered_prefill_plan is None
+    assert scheduler.boundary_stats["fallback_no_decode"] == 1
+
+
+def test_boundary_prefix_cache_fails_explicitly():
+    scheduler, _ = _boundary_scheduler()
+    scheduler.cache_config.enable_prefix_caching = True
+    with pytest.raises(ValueError, match="prefix caching disabled"):
+        scheduler.schedule()
+
+
+def test_boundary_final_inflight_chunk_allows_independent_native_prefill():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler(4)
+    first, second = create_requests(
+        num_requests=2, num_tokens=8, req_ids=["first", "second"], max_tokens=4
+    )
+    scheduler.add_request(first)
+    initial = scheduler.schedule()
+    assert initial.layered_prefill_plan is not None
+    final = scheduler.schedule()
+    assert final.layered_prefill_plan.is_final_group
+    scheduler.max_num_running_reqs = 3
+    scheduler.add_request(second)
+    native = scheduler.schedule()
+    assert native.num_scheduled_tokens["second"] == 8
+    assert native.layered_prefill_plan is None
+    assert "first" not in native.num_scheduled_tokens
+    assert scheduler._boundary_request_id == "first"
+    assert scheduler._boundary_final_step_seq > scheduler.processed_step_seq
+    assert not first.layered_prefill_enabled
+    assert first.num_in_flight_tokens == 16
+
+
+@pytest.mark.parametrize("abort_after_final", [False, True])
+@pytest.mark.parametrize("trace_enabled", [False, True])
+def test_boundary_head_exit_queues_independent_native_at_depth_two(
+    abort_after_final, trace_enabled, monkeypatch
+):
+    """Fill PP0 after HEAD's final interval while PP1 still owns that chunk."""
+    from collections import deque
+    from dataclasses import replace
+
+    from tests.v1.core.utils import create_requests
+
+    from vllm.v1.request import RequestStatus
+
+    scheduler, decode = _boundary_scheduler()
+    pure_decode = scheduler.schedule()
+    scheduler.update_from_output(pure_decode, _sampled_runner_output(decode.request_id))
+    (active,) = create_requests(
+        num_requests=1, num_tokens=5000, req_ids=["head_active"], max_tokens=4
+    )
+    scheduler.add_request(active)
+    queue = deque()
+    intervals = []
+    for _ in range(4):
+        step = scheduler.schedule()
+        plan = step.layered_prefill_plan
+        assert plan is not None and plan.boundary_mode == "head"
+        intervals.append((plan.group_start, plan.group_end))
+        queue.append(step)
+        if len(queue) == 2:
+            completed = queue.popleft()
+            scheduler.update_from_output(completed, _wavefront_output(completed))
+    assert intervals == [(0, 4), (4, 8), (8, 12), (12, 32)]
+    assert len(queue) == 1
+    final = queue[0]
+    plan = final.layered_prefill_plan
+    assert plan.is_final_group and not plan.is_final_chunk
+    chunk_tokens = plan.query_tokens[active.request_id]
+    assert active.num_computed_tokens == chunk_tokens < active.num_prompt_tokens
+    assert active.num_in_flight_tokens == chunk_tokens
+    final_seq = scheduler._boundary_final_step_seq
+    assert final_seq == scheduler.sched_step_seq
+    assert scheduler.processed_step_seq == final_seq - 1
+
+    if abort_after_final:
+        scheduler.finish_requests(active.request_id, RequestStatus.FINISHED_ABORTED)
+        assert scheduler.deferred_frees
+    scheduler.max_num_running_reqs = 3
+    (independent,) = create_requests(
+        num_requests=1, num_tokens=8, req_ids=["native_next"], max_tokens=4
+    )
+    scheduler.add_request(independent)
+    scheduler.layered_prefill_policy.config = replace(
+        scheduler.layered_prefill_policy.config, boundary_trace=trace_enabled
+    )
+    events = []
+    boundary_event = scheduler._boundary_event
+
+    def record_event(event, **details):
+        events.append((event, details))
+        boundary_event(event, **details)
+
+    monkeypatch.setattr(scheduler, "_boundary_event", record_event)
+    native = scheduler.schedule()
+    queue.append(native)
+    assert len(queue) == 2
+    assert native.layered_prefill_plan is None
+    assert native.num_scheduled_tokens[independent.request_id] == 8
+    assert active.request_id not in native.num_scheduled_tokens
+    assert scheduler._boundary_request_id == active.request_id
+    assert scheduler._boundary_mode == "head"
+    assert scheduler._boundary_final_step_seq == final_seq
+    assert not scheduler._boundary_hold_req_ids
+    assert scheduler.processed_step_seq == final_seq - 1
+    assert scheduler.sched_step_seq == final_seq + 1
+    assert events == (
+        [
+            (
+                "final_draining_admit",
+                {
+                    "active_req": active.request_id,
+                    "final_seq": final_seq,
+                    "processed_seq": final_seq - 1,
+                    "step_seq": final_seq + 1,
+                    "prefills": {independent.request_id: 8},
+                },
+            )
+        ]
+        if trace_enabled
+        else []
+    )
+    if not abort_after_final:
+        assert active.num_computed_tokens == chunk_tokens
+        assert active.num_in_flight_tokens == chunk_tokens
+
+    completed = queue.popleft()
+    scheduler.update_from_output(completed, _wavefront_output(completed))
+    assert scheduler.processed_step_seq == final_seq
+    assert not scheduler.deferred_frees
+    if not abort_after_final:
+        assert active.num_in_flight_tokens == 0
+        assert active.num_computed_tokens == chunk_tokens
+        assert active.num_output_tokens == 0
+    completed = queue.popleft()
+    scheduler.update_from_output(completed, _wavefront_output(completed))
+    assert independent.num_output_tokens == 1
+    assert independent.num_in_flight_tokens == 0
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_multi_prefill_keeps_native_batch():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler()
+    scheduler.max_num_running_reqs = 4
+    requests = create_requests(
+        num_requests=2, num_tokens=8, req_ids=["p0", "p1"], max_tokens=4
+    )
+    for request in requests:
+        scheduler.add_request(request)
+    output = scheduler.schedule()
+    assert output.layered_prefill_plan is None
+    assert all(output.num_scheduled_tokens[r.request_id] == 8 for r in requests)
+    assert all(r.num_computed_tokens == 8 for r in requests)
+    assert scheduler.boundary_stats["fallback_multi_p"] == 1
+
+
+def test_boundary_budget_fallback_does_not_shrink_native_query():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _boundary_scheduler()
+    scheduler._layered_decode_reserve_tokens = 64
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=4095, req_ids=["wide"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    output = scheduler.schedule()
+    assert output.layered_prefill_plan is None
+    assert output.num_scheduled_tokens["wide"] == 4095
+    assert prefill.num_computed_tokens == 4095
+    assert scheduler.boundary_stats["fallback_budget"] == 1
+
+
+@pytest.mark.parametrize("groups", [4, 8, 16])
+def test_boundary_head_reserves_inflight_decode_budget_at_depth_two(
+    groups, monkeypatch
+):
+    """Shrink saturated HEAD once so D retiring after admission still fits."""
+    from collections import deque
+
+    from tests.v1.core.utils import create_requests
+
+    scheduler, first_decode = _boundary_scheduler(groups)
+    scheduler.max_num_running_reqs = 3
+    (second_decode,) = create_requests(
+        num_requests=1, num_tokens=8, req_ids=["second_decode"], max_tokens=256
+    )
+    scheduler.add_request(second_decode)
+    while not second_decode.output_token_ids:
+        step = scheduler.schedule()
+        scheduler.update_from_output(step, _wavefront_output(step))
+    decodes = (first_decode, second_decode)
+    assert all(not request.num_in_flight_tokens for request in decodes)
+
+    # A real D-only submission remains queued; the other D is still ready.
+    scheduler.max_num_scheduled_tokens = 1
+    queued_decode = scheduler.schedule()
+    assert queued_decode.total_num_scheduled_tokens == 1
+    assert queued_decode.layered_prefill_plan is None
+    scheduler.max_num_scheduled_tokens = 4096
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=8192, req_ids=["saturated_head"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    admitted = []
+    finalize = scheduler._finalize_boundary_schedule
+
+    def record_admission(output):
+        if prefill.request_id in output.num_scheduled_tokens:
+            admitted.append(output.num_scheduled_tokens[prefill.request_id])
+        finalize(output)
+
+    monkeypatch.setattr(scheduler, "_finalize_boundary_schedule", record_admission)
+    queue = deque([queued_decode])
+    plans = []
+    while True:
+        ready_decodes = {
+            request.request_id
+            for request in decodes
+            if not request.num_in_flight_tokens
+        }
+        step = scheduler.schedule()
+        plan = step.layered_prefill_plan
+        assert plan is not None and plan.boundary_mode == "head"
+        plans.append(plan)
+        assert plan.query_tokens == {prefill.request_id: 4094}
+        assert ready_decodes <= step.num_scheduled_tokens.keys()
+        assert step.total_num_scheduled_tokens == sum(
+            step.num_scheduled_tokens.values()
+        )
+        # Even if both D retire, the frozen P plus all D and TP padding fits.
+        assert (4094 + len(decodes) + 1) // 2 * 2 <= 4096
+        assert prefill.num_computed_tokens == (4094 if plan.is_final_group else 0)
+        queue.append(step)
+        assert len(queue) == 2
+        completed = queue.popleft()
+        scheduler.update_from_output(completed, _wavefront_output(completed))
+        if plan.is_final_group:
+            break
+    assert admitted == [4095]
+    assert scheduler.boundary_stats["query_shrunk"] == 1
+    assert scheduler.boundary_stats["fallback_budget"] == 0
+    assert len(plans) == groups // 2
+    assert sum(plan.commit_tokens[prefill.request_id] for plan in plans) == 4094
+    assert prefill.num_in_flight_tokens == 4094
+    assert not plans[-1].is_final_chunk
+    completed = queue.popleft()
+    scheduler.update_from_output(completed, _wavefront_output(completed))
+    assert prefill.num_in_flight_tokens == 0
+    assert prefill.num_computed_tokens == 4094
+    assert prefill.num_output_tokens == 0
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_abort_defers_block_reuse_until_interval_retires():
+    from tests.v1.core.utils import create_requests
+
+    from vllm.v1.request import RequestStatus
+
+    scheduler, _ = _boundary_scheduler()
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=8, req_ids=["aborted"], max_tokens=4
+    )
+    scheduler.add_request(prefill)
+    output = scheduler.schedule()
+    assert output.layered_prefill_plan is not None
+    scheduler.finish_requests("aborted", RequestStatus.FINISHED_ABORTED)
+    assert "aborted" not in scheduler.requests
+    assert scheduler.deferred_frees
+    assert scheduler.processed_step_seq < scheduler.sched_step_seq
+    scheduler.update_from_output(
+        output, _empty_runner_output(list(output.num_scheduled_tokens))
+    )
+    assert not scheduler.deferred_frees
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+@pytest.mark.parametrize("groups", [4, 8, 16])
+@pytest.mark.parametrize("arrive_before_stage_end", [False, True])
+def test_boundary_isolated_policy_exits_only_before_pp0_completion(
+    groups, arrive_before_stage_end
+):
+    config = _config(layers=43)
+    config.parallel_config.pipeline_parallel_size = 2
+    config.additional_config["scheduler_config"]["layered_prefill_config"].update(
+        allowed_num_groups=[groups], boundary_policy="pp_transition"
+    )
+    policy = LayeredPrefillPolicy(config)
+    request = SimpleNamespace(
+        request_id="p",
+        num_prompt_tokens=16,
+        num_computed_tokens=0,
+        layered_prefill_enabled=False,
+    )
+    policy.initialize_request(request)
+    plans = []
+    arrival_group = 1 if arrive_before_stage_end else groups // 2
+    while request.layered_prefill_group_id < groups:
+        plan = policy.make_boundary_plan(
+            request,
+            "isolated",
+            has_successor=request.layered_prefill_group_id >= arrival_group,
+        )
+        plans.append(plan)
+        assert plan.boundary_mode == "isolated"
+        request.layered_prefill_group_id = plan.resume_group_id
+    assert len(plans) == (groups // 2 if arrive_before_stage_end else groups)
+    assert [
+        layer for plan in plans for layer in range(plan.group_start, plan.group_end)
+    ] == list(range(43))
+    assert sum(plan.commit_tokens["p"] for plan in plans) == 16
+    assert plans[-1].is_final_group and plans[-1].resume_group_id == groups
+    if arrive_before_stage_end:
+        assert plans[-1].group_start < 22 < plans[-1].group_end
+    else:
+        assert all(
+            plan.group_end <= 22 or plan.group_start >= 22 for plan in plans
+        )
+
+
+@pytest.mark.parametrize("groups", [4, 8, 16])
+@pytest.mark.parametrize("partition", ["16,16", "10,22", "23,9"])
+def test_boundary_interval_protocol_covers_custom_partition_once(
+    groups, partition, monkeypatch
+):
+    monkeypatch.setenv("VLLM_PP_LAYER_PARTITION", partition)
+    config = _config(layers=32)
+    config.parallel_config.pipeline_parallel_size = 2
+    config.additional_config["scheduler_config"]["layered_prefill_config"].update(
+        allowed_num_groups=[groups], boundary_policy="pp_transition"
+    )
+    policy = LayeredPrefillPolicy(config)
+    request = SimpleNamespace(
+        request_id="p",
+        num_prompt_tokens=16,
+        num_computed_tokens=4,
+        layered_prefill_enabled=False,
+    )
+    policy.initialize_request(request)
+    covered = []
+    while request.layered_prefill_group_id < request.layered_prefill_num_groups:
+        plan = policy.make_boundary_plan(request, "tail")
+        covered.extend(range(plan.group_start, plan.group_end))
+        request.layered_prefill_group_id = plan.resume_group_id
+    assert covered == list(range(32))
+    assert plan.is_sampling_step
+    assert plan.cached_tokens == {"p": 4}
+
+
 def test_pp2_v2_fresh_chunk_reserves_tp_aligned_decode_budget():
     """A full-MBT P chunk leaves room for D and keeps one width per group."""
     from tests.v1.core.utils import create_requests
@@ -1350,6 +1958,7 @@ def test_layered_admission_failure_does_not_starve_decode():
     running request's Decode rows keep executing, instead of the doomed
     candidate's query budget starving them into zero-token steps."""
     from tests.v1.core.utils import create_requests
+
     from vllm.v1.request import RequestStatus
 
     scheduler = _local_scheduler(
@@ -1408,9 +2017,9 @@ def test_layered_stall_watchdog_preempts_unschedulable_running_request():
     preemption cannot resolve, e.g. a running request whose decode rows are
     deferred indefinitely with no waiting request to drive admission."""
     from tests.v1.core.utils import create_requests
-    from vllm.v1.request import RequestStatus
 
     from vllm.v1.core.sched.scheduler import _LAYERED_STALL_RECOVERY_STEPS
+    from vllm.v1.request import RequestStatus
 
     scheduler = _local_scheduler(
         async_scheduling=True,
@@ -1656,6 +2265,7 @@ def test_pp2_v2_wavefront_does_not_submit_next_chunk_before_prior_outputs(groups
 @pytest.mark.parametrize("groups", [2, 3, 4, 5, 8, 16])
 def test_pp2_v2_wavefront_drains_both_outputs_after_interrupt(interrupt, groups):
     from tests.v1.core.utils import create_requests
+
     from vllm.v1.request import RequestStatus
 
     scheduler = _wavefront_scheduler(groups)

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from bisect import bisect_left
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from math import ceil
 from typing import Any
 
@@ -84,6 +84,8 @@ class LayeredPrefillConfig:
     """
 
     enabled: bool = False
+    boundary_policy: str = "off"
+    boundary_trace: bool = False
     mode: str = "one_group"
     group_token_target: int = DEFAULT_GROUP_TOKEN_TARGET
     allowed_num_groups: tuple[int, ...] = DEFAULT_ALLOWED_NUM_GROUPS
@@ -108,6 +110,8 @@ class LayeredPrefillConfig:
     def __post_init__(self) -> None:
         groups = tuple(sorted(set(int(v) for v in self.allowed_num_groups)))
         object.__setattr__(self, "allowed_num_groups", groups)
+        if self.boundary_policy not in ("off", "pp_transition"):
+            raise ValueError("boundary_policy must be 'off' or 'pp_transition'")
         if self.enabled and (self.fuse_mixed_batch or self.same_layer_batch):
             raise ValueError(
                 "layered_prefill_config: same_layer_batch and fuse_mixed_batch "
@@ -170,6 +174,8 @@ class LayeredPrefillConfig:
             allowed_num_groups = DEFAULT_ALLOWED_NUM_GROUPS
         return cls(
             enabled=bool(raw.get("enabled", False)),
+            boundary_policy=str(raw.get("boundary_policy", "off")),
+            boundary_trace=bool(raw.get("boundary_trace", False)),
             mode=str(raw.get("mode", "one_group")),
             group_token_target=int(
                 raw.get("group_token_target", DEFAULT_GROUP_TOKEN_TARGET)
@@ -417,6 +423,9 @@ class LayeredPrefillPlan:
     reuse_kv_blocks: bool = True
     is_final_chunk: bool = True
     cached_tokens: Mapping[str, int] | None = None
+    boundary_mode: str | None = None
+    group_stop: int | None = None
+    model_num_layers: int | None = None
 
     def __post_init__(self) -> None:
         if self.version != 1:
@@ -427,6 +436,19 @@ class LayeredPrefillPlan:
             raise ValueError("invalid group_id/num_groups")
         if self.group_start < 0 or self.group_end <= self.group_start:
             raise ValueError("invalid group range")
+        if self.boundary_mode is not None:
+            if self.boundary_mode not in ("head", "tail", "isolated"):
+                raise ValueError("invalid boundary_mode")
+            if self.model_num_layers is None or self.group_end > self.model_num_layers:
+                raise ValueError("boundary interval exceeds model layers")
+            if self.group_stop is None or not (
+                self.group_id < self.group_stop <= self.num_groups
+            ):
+                raise ValueError("invalid boundary group_stop")
+            if (self.group_stop == self.num_groups) != (
+                self.group_end == self.model_num_layers
+            ):
+                raise ValueError("boundary completion disagrees with group_stop")
         req_ids = tuple(self.prefill_req_ids)
         query_tokens = {
             req_id: int(value) for req_id, value in self.query_tokens.items()
@@ -467,7 +489,13 @@ class LayeredPrefillPlan:
             raise ValueError("an intermediate group cannot commit logical tokens")
 
     @property
+    def resume_group_id(self) -> int:
+        return self.group_stop if self.group_stop is not None else self.group_id + 1
+
+    @property
     def is_final_group(self) -> bool:
+        if self.boundary_mode is not None:
+            return self.group_end == self.model_num_layers
         return self.group_id + 1 == self.num_groups
 
     @property
@@ -489,6 +517,7 @@ class LayeredFrontier:
     query_len: int
     hidden_states: Any
     residual: Any | None = None
+    cohort_id: int | None = None
 
 
 @dataclass
@@ -652,6 +681,40 @@ class LayeredPrefillPolicy:
             cached_tokens={
                 request.request_id: int(
                     getattr(request, "layered_prefill_cached_tokens", 0) or 0
+                )
+            },
+        )
+
+    def make_boundary_plan(
+        self, request: Any, mode: str, has_successor: bool = False
+    ) -> LayeredPrefillPlan:
+        """Merge only the transition interval, preserving real group indices."""
+        from vllm.distributed.utils import get_pp_indices
+
+        plan = self.make_plan(request)
+        ranges = self._layer_group_ranges[plan.num_groups]
+        _, stage_end = get_pp_indices(self.num_hidden_layers, 0, 2)
+        stop = plan.group_id + 1
+        if mode == "tail" and plan.group_id == 0:
+            stop = next(g.group_id + 1 for g in ranges if g.start == stage_end)
+        elif (
+            mode in ("head", "isolated")
+            and plan.group_end == stage_end
+            and has_successor
+        ):
+            stop = plan.num_groups
+        end = ranges[stop - 1].end
+        return replace(
+            plan,
+            boundary_mode=mode,
+            group_stop=stop,
+            model_num_layers=self.num_hidden_layers,
+            group_end=end,
+            commit_tokens={
+                request.request_id: (
+                    request.layered_prefill_query_tokens
+                    if end == self.num_hidden_layers
+                    else 0
                 )
             },
         )

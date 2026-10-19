@@ -10,6 +10,14 @@ from functools import lru_cache
 from typing import Any
 
 from vllm.compilation.cuda_graph import CUDAGraphStat
+from vllm.logger import init_logger
+from vllm.model_executor.layers.fused_moe.routed_experts_capturer import (
+    RoutedExpertsManager,
+)
+from vllm.multimodal import MULTIMODAL_REGISTRY, MultiModalRegistry
+from vllm.multimodal.encoder_budget import MultiModalBudget
+from vllm.multimodal.utils import get_mm_features_in_window
+
 from vllm.config import KVEventsConfig, VllmConfig
 from vllm.distributed.ec_transfer.ec_connector.base import (
     ECConnectorBase,
@@ -27,13 +35,6 @@ from vllm.distributed.kv_transfer.kv_connector.v1 import (
 from vllm.distributed.kv_transfer.kv_connector.v1.base import KVConnectorMetadata
 from vllm.distributed.kv_transfer.kv_connector.v1.metrics import KVConnectorStats
 from vllm.distributed.utils import get_pp_indices
-from vllm.logger import init_logger
-from vllm.model_executor.layers.fused_moe.routed_experts_capturer import (
-    RoutedExpertsManager,
-)
-from vllm.multimodal import MULTIMODAL_REGISTRY, MultiModalRegistry
-from vllm.multimodal.encoder_budget import MultiModalBudget
-from vllm.multimodal.utils import get_mm_features_in_window
 from vllm.v1.core.encoder_cache_manager import (
     EncoderCacheManager,
     EncoderDecoderCacheManager,
@@ -41,7 +42,21 @@ from vllm.v1.core.encoder_cache_manager import (
 from vllm.v1.core.kv_cache_manager import KVCacheBlocks, KVCacheManager
 from vllm.v1.core.kv_cache_metrics import KVCacheMetricsCollector
 from vllm.v1.core.kv_cache_utils import KVCacheBlock
+from vllm.v1.core.layered_prefill import (
+    LayeredPrefillPolicy,
+    LayerGroupRange,
+    make_pp_aligned_layer_group_ranges,
+    reset_layered_prefill_request,
+    select_num_groups,
+)
 from vllm.v1.core.sched.interface import PauseState, SchedulerInterface
+from vllm.v1.core.sched.output import (
+    CachedRequestData,
+    GrammarOutput,
+    NewRequestData,
+    ScheduledEncoderInputStats,
+    SchedulerOutput,
+)
 from vllm.v1.core.sched.request_queue import (
     RequestQueue,
     SchedulingPolicy,
@@ -58,20 +73,6 @@ from vllm.v1.spec_decode.dynamic.utils import build_dynamic_sd_schedule_lookup
 from vllm.v1.spec_decode.metrics import SpecDecodingStats
 from vllm.v1.structured_output import StructuredOutputGrammar, StructuredOutputManager
 from vllm.v1.utils import record_function_or_nullcontext
-
-from vllm.v1.core.layered_prefill import (
-    LayeredPrefillPolicy,
-    LayerGroupRange,
-    make_pp_aligned_layer_group_ranges,
-    reset_layered_prefill_request,
-)
-from vllm.v1.core.sched.output import (
-    CachedRequestData,
-    GrammarOutput,
-    NewRequestData,
-    ScheduledEncoderInputStats,
-    SchedulerOutput,
-)
 
 logger = init_logger(__name__)
 
@@ -104,6 +105,12 @@ class Scheduler(SchedulerInterface):
         self._layered_stall_steps = 0
         self._layered_pp_wave_stage1_request: Request | None = None
         self._layered_pp_wave_tail_request: Request | None = None
+        self._boundary_request_id: str | None = None
+        self._boundary_mode: str | None = None
+        self._boundary_final_step_seq: int | None = None
+        self._boundary_hold_req_ids: set[str] = set()
+        self._boundary_decode_only = False
+        self.boundary_stats: dict[str, int] = defaultdict(int)
         self.cache_config = vllm_config.cache_config
         self.lora_config = vllm_config.lora_config
         self.kv_cache_config = kv_cache_config
@@ -152,7 +159,7 @@ class Scheduler(SchedulerInterface):
         self.connector = None
         self.connector_prefix_cache_stats: PrefixCacheStats | None = None
         self.recompute_kv_load_failures = True
-        self.defer_block_free = False
+        self.defer_block_free = self._boundary_enabled()
         # Whether a preempted request's in-flight output must be dropped; see
         # KVConnectorBase_V1.requires_kv_delivery.
         self.requires_kv_delivery = False
@@ -465,7 +472,10 @@ class Scheduler(SchedulerInterface):
 
     def schedule(self, throttle_prefills: bool = False) -> SchedulerOutput:
         """Schedule one step, optionally using the layered-prefill policy."""
-        if self.layered_prefill_policy.enabled:
+        if self._boundary_enabled():
+            scheduler_output = self._schedule_boundary_prefill(throttle_prefills)
+            self._check_layered_stall(scheduler_output)
+        elif self.layered_prefill_policy.enabled:
             scheduler_output = self._schedule_layered_prefill(throttle_prefills)
             self._check_layered_stall(scheduler_output)
         else:
@@ -531,6 +541,255 @@ class Scheduler(SchedulerInterface):
             max_seq_len=max_seq_len,
             sampling_step=sampling_step,
         )
+
+    def _boundary_enabled(self) -> bool:
+        config = self.layered_prefill_policy.config
+        return config.enabled and config.boundary_policy == "pp_transition"
+
+    def _boundary_event(self, event: str, **details: Any) -> None:
+        self.boundary_stats[event] += 1
+        if self.layered_prefill_policy.config.boundary_trace:
+            logger.info(
+                "PD boundary %s: %s counters=%s",
+                event,
+                details,
+                dict(self.boundary_stats),
+            )
+
+    def _schedule_boundary_prefill(
+        self, throttle_prefills: bool = False
+    ) -> SchedulerOutput:
+        if getattr(self.cache_config, "enable_prefix_caching", False):
+            raise ValueError("pp_transition requires prefix caching disabled")
+        if not (
+            self.use_v2_model_runner
+            and self.parallel_config.pipeline_parallel_size == 2
+            and self.parallel_config.data_parallel_size == 1
+            and not self.scheduler_config.async_scheduling
+            and self.num_spec_tokens == 0
+            and self.ec_connector is None
+            and self._layered_prefill_supported_for_scheduler()
+        ):
+            raise ValueError(
+                "pp_transition requires MRV2, PP2, DP1, synchronous scheduling, "
+                "no speculative decoding, DBO or connectors"
+            )
+        active = self.requests.get(self._boundary_request_id)
+        if active is not None and self._is_layered_prefill_pending(active):
+            return self._schedule_layered_prefill(throttle_prefills)
+        final_seq = self._boundary_final_step_seq
+        if final_seq is not None and self.processed_step_seq < final_seq:
+            # All intervals have been submitted in RPC order. Independent
+            # native P can fill PP0 while this chunk finishes on PP1. Keep
+            # its own next chunk and new boundary cohorts behind retirement.
+            assert self._boundary_request_id is not None
+            output = self._schedule_regular_holding_requests(
+                {self._boundary_request_id}, throttle_prefills
+            )
+            if self.layered_prefill_policy.config.boundary_trace:
+                prefills = {
+                    rid: count
+                    for rid, count in output.num_scheduled_tokens.items()
+                    if rid != self._boundary_request_id
+                    and count > 0
+                    and not self.requests[rid].output_token_ids
+                    and self.requests[rid].num_computed_tokens
+                    <= self.requests[rid].num_prompt_tokens
+                }
+                if prefills:
+                    self._boundary_event(
+                        "final_draining_admit",
+                        active_req=self._boundary_request_id,
+                        final_seq=final_seq,
+                        processed_seq=self.processed_step_seq,
+                        step_seq=self.sched_step_seq,
+                        prefills=prefills,
+                    )
+            return output
+        if active is not None and active.num_in_flight_tokens:
+            # A preempted partial cohort has no final submission fence.
+            return self._schedule_regular_holding_prefills(throttle_prefills)
+        self._boundary_request_id = None
+        self._boundary_mode = None
+        self._boundary_final_step_seq = None
+        return self._schedule_regular(throttle_prefills)
+
+    def _boundary_has_successor(
+        self, request: Request, scheduled: dict[str, int]
+    ) -> bool:
+        """Conservatively retain native scheduling when more P is visible.
+
+        Waiting/skipped requests are not asserted runnable: their presence
+        suppresses the optimization until real admission resolves eligibility.
+        """
+        for queue in (self.running, self.waiting, self.skipped_waiting):
+            for other in queue:
+                if other.output_token_ids or other.is_finished():
+                    continue
+                consumed = scheduled.get(other.request_id, 0)
+                if other is request:
+                    consumed = max(consumed, request.layered_prefill_query_tokens)
+                if other.num_computed_tokens + consumed < other.num_prompt_tokens:
+                    return True
+        return False
+
+    def _make_boundary_plan(self, request: Request):
+        assert self._boundary_mode is not None
+        return self.layered_prefill_policy.make_boundary_plan(
+            request,
+            self._boundary_mode,
+            has_successor=self._boundary_has_successor(request, {}),
+        )
+
+    def _finalize_boundary_schedule(self, output: SchedulerOutput) -> None:
+        if self._hold_layered_prefills or self._boundary_request_id is not None:
+            return
+        prefills = [
+            self.requests[rid]
+            for rid in output.num_scheduled_tokens
+            if self.requests[rid].num_computed_tokens
+            < self.requests[rid].num_prompt_tokens
+        ]
+        if not prefills:
+            if output.total_num_scheduled_tokens and not any(
+                r.num_in_flight_tokens and not r.output_token_ids for r in self.running
+            ):
+                self._boundary_decode_only = True
+                self._boundary_event("decode_only")
+            return
+        was_decode_only = self._boundary_decode_only
+        self._boundary_decode_only = False
+        if len(prefills) != 1:
+            self._boundary_event("fallback_multi_p", count=len(prefills))
+            return
+        request = prefills[0]
+        query = output.num_scheduled_tokens[request.request_id]
+        # The old eligibility predicate deliberately only admits token zero.
+        # Use the common restrictions while permitting a retired native chunk.
+        params = request.sampling_params
+        if (
+            request.num_in_flight_tokens
+            or request.num_stale_output_tokens
+            or request.pooling_params is not None
+            or request.output_token_ids
+            or params is None
+            or params.logprobs is not None
+            or params.prompt_logprobs is not None
+            or params.logprob_token_ids
+            or request.use_structured_output
+            or request.mm_features
+            or request.prompt_embeds is not None
+            or request.resumable
+            or request.lora_request is not None
+            or query <= 1
+        ):
+            self._boundary_event("fallback_request_or_inflight")
+            return
+        if not self._has_layered_decode_work(request):
+            self._boundary_event("fallback_no_decode")
+            return
+        has_successor = self._boundary_has_successor(
+            request, output.num_scheduled_tokens
+        )
+        if has_successor and not was_decode_only:
+            self._boundary_event("regular_prefill")
+            return
+        decode_rows = output.total_num_scheduled_tokens - query
+        reserve = max(
+            decode_rows,
+            self._layered_decode_reserve_tokens,
+            sum(r is not request for r in self.running),
+        )
+        tp_size = self.parallel_config.tensor_parallel_size
+        budget = self.max_num_scheduled_tokens // tp_size * tp_size
+        reserve = (reserve + tp_size - 1) // tp_size * tp_size
+        query_capacity = budget - reserve
+        if query > query_capacity:
+            if not was_decode_only or query_capacity <= 1:
+                self._boundary_event("fallback_budget", query=query, reserve=reserve)
+                return
+            # Admission reserved KV for the larger native query. Prefix caching
+            # is disabled and logical cursors have not advanced, so retaining
+            # those extra blocks is safe; only this shortened query executes.
+            old_query = query
+            query = query_capacity
+            output.num_scheduled_tokens[request.request_id] = query
+            output.total_num_scheduled_tokens -= old_query - query
+            cached = output.scheduled_cached_reqs
+            if request.request_id in cached.req_ids and cached.new_token_ids:
+                index = cached.req_ids.index(request.request_id)
+                cached.new_token_ids[index] = cached.new_token_ids[index][:query]
+            has_successor = self._boundary_has_successor(
+                request, output.num_scheduled_tokens
+            )
+            self._boundary_event(
+                "query_shrunk", query=query, admitted=old_query, reserve=reserve
+            )
+        policy = self.layered_prefill_policy
+        policy.initialize_request(request)
+        request.layered_prefill_query_tokens = query
+        request.layered_prefill_num_groups = min(
+            policy.num_hidden_layers,
+            max(
+                2,
+                select_num_groups(
+                    query,
+                    policy.num_hidden_layers,
+                    group_token_target=policy.config.group_token_target,
+                    allowed_num_groups=policy.config.allowed_num_groups,
+                ),
+            ),
+        )
+        request.layered_prefill_kv_reserved = True
+        self._boundary_request_id = request.request_id
+        self._boundary_mode = (
+            "head"
+            if was_decode_only and has_successor
+            else "isolated"
+            if was_decode_only
+            else "tail"
+        )
+        output.layered_prefill_plan = self._make_boundary_plan(request)
+        self._boundary_event(
+            "enter_" + self._boundary_mode,
+            req=request.request_id,
+            query=query,
+            origin=request.num_computed_tokens,
+        )
+
+    def _update_after_boundary_schedule(
+        self, request: Request, output: SchedulerOutput
+    ) -> None:
+        plan = output.layered_prefill_plan
+        assert plan is not None
+        rid = request.request_id
+        request.num_in_flight_tokens += plan.query_tokens[rid]
+        request.num_computed_tokens += plan.commit_tokens[rid]
+        request.last_sched_seq = self.sched_step_seq
+        request.is_prefill_chunk = (
+            not plan.is_final_group
+            or request.num_computed_tokens < request.num_prompt_tokens
+        )
+        if request.is_prefill_chunk:
+            self._inflight_prefills.add(request)
+        else:
+            self._inflight_prefills.discard(request)
+        request.layered_prefill_group_id = plan.resume_group_id
+        self._boundary_event(
+            "interval",
+            req=rid,
+            cohort=plan.cohort_id,
+            start=plan.group_start,
+            end=plan.group_end,
+            group=plan.group_id,
+            stop=plan.resume_group_id,
+            query=plan.query_tokens[rid],
+            commit=plan.commit_tokens[rid],
+        )
+        if plan.is_final_group:
+            self._boundary_final_step_seq = self.sched_step_seq
+            reset_layered_prefill_request(request)
+            self._boundary_event("chunk_submitted")
 
     def _schedule_layered_prefill(
         self, throttle_prefills: bool = False
@@ -668,6 +927,7 @@ class Scheduler(SchedulerInterface):
             )
 
         query_tokens = self._reserve_layered_decode_budget(candidate)
+        previous_fence = self.sched_step_seq
         old_max_tokens = self.max_num_scheduled_tokens
         self.max_num_scheduled_tokens = old_max_tokens - query_tokens
         self._hold_layered_prefills = True
@@ -765,7 +1025,11 @@ class Scheduler(SchedulerInterface):
                 candidate.num_computed_tokens
             )
 
-        plan = self.layered_prefill_policy.make_plan(candidate)
+        plan = (
+            self._make_boundary_plan(candidate)
+            if self._boundary_enabled()
+            else self.layered_prefill_policy.make_plan(candidate)
+        )
         scheduler_output.layered_prefill_plan = plan
         candidate.layered_prefill_kv_reserved = True
         if _LAYERED_PREFILL_TRACE:
@@ -783,6 +1047,20 @@ class Scheduler(SchedulerInterface):
                 plan.is_final_chunk,
             )
         self._attach_running_decodes_to_layered_output(scheduler_output, candidate)
+        if self._boundary_enabled() and self.defer_block_free:
+            # _schedule_regular can have scheduled zero D rows; the appended
+            # frozen query still constitutes a nonempty, ordered KV write.
+            if self.sched_step_seq == previous_fence:
+                self.sched_step_seq += 1
+            omitted_decodes = sum(
+                self._is_layered_decode_request(r)
+                and not r.num_in_flight_tokens
+                and r.request_id not in scheduler_output.num_scheduled_tokens
+                for r in self.running
+            )
+            if omitted_decodes:
+                self.boundary_stats["decode_wait_rows"] += omitted_decodes
+                self._boundary_event("decode_wait_steps", rows=omitted_decodes)
         self._update_after_layered_schedule(candidate, scheduler_output)
         self.prev_step_scheduled_req_ids.add(req_id)
         return scheduler_output
@@ -850,6 +1128,11 @@ class Scheduler(SchedulerInterface):
             reset_layered_prefill_request(request)
 
     def _get_layered_prefill_candidate(self) -> Request | None:
+        if self._boundary_enabled():
+            candidate = self.requests.get(self._boundary_request_id)
+            if candidate is not None and self._is_layered_prefill_pending(candidate):
+                return candidate
+            return None
         wave_candidate = self._get_layered_pp_wave_candidate()
         if wave_candidate is not None:
             return wave_candidate
@@ -1046,6 +1329,13 @@ class Scheduler(SchedulerInterface):
 
     def _should_hold_for_layered_prefill(self, request: Request) -> bool:
         """Whether regular scheduling must leave a prompt for the policy."""
+        if request.request_id in self._boundary_hold_req_ids:
+            return True
+        if self._boundary_enabled() and self._hold_layered_prefills:
+            return (
+                request.num_computed_tokens < request.num_prompt_tokens
+                and not request.output_token_ids
+            )
         return bool(
             self._hold_layered_prefills
             and request.status in (RequestStatus.WAITING, RequestStatus.PREEMPTED)
@@ -1054,6 +1344,16 @@ class Scheduler(SchedulerInterface):
             and request.num_computed_tokens == 0
             and not request.output_token_ids
         )
+
+    def _schedule_regular_holding_requests(
+        self, req_ids: set[str], throttle_prefills: bool = False
+    ) -> SchedulerOutput:
+        previous = self._boundary_hold_req_ids
+        self._boundary_hold_req_ids = previous | req_ids
+        try:
+            return self._schedule_regular(throttle_prefills)
+        finally:
+            self._boundary_hold_req_ids = previous
 
     def _schedule_regular_holding_prefills(
         self, throttle_prefills: bool = False
@@ -1420,6 +1720,9 @@ class Scheduler(SchedulerInterface):
         req_id = request.request_id
         plan = scheduler_output.layered_prefill_plan
         assert plan is not None
+        if plan.boundary_mode is not None:
+            self._update_after_boundary_schedule(request, scheduler_output)
+            return
         # Give PP0 one opportunity after every PP1 submission. The saved
         # tail takes the following slot, even with many groups on PP1.
         self._layered_pp_wave_stage1_request = (
@@ -1531,6 +1834,10 @@ class Scheduler(SchedulerInterface):
         req_index = 0
         while req_index < len(self.running) and token_budget > 0:
             request = self.running[req_index]
+
+            if self._should_hold_for_layered_prefill(request):
+                req_index += 1
+                continue
 
             # Layered prefill is appended by ``_schedule_layered_prefill``
             # after Decode rows have been admitted.  Keeping it out of this
@@ -2300,6 +2607,9 @@ class Scheduler(SchedulerInterface):
             ec_manager_metadata=self.encoder_cache_manager.get_manager_metadata(),
         )
 
+        if self._boundary_enabled():
+            self._finalize_boundary_schedule(scheduler_output)
+
         # NOTE(Kuntai): this function is designed for multiple purposes:
         # 1. Plan the KV cache store
         # 2. Wrap up all the KV cache load / save ops into an opaque object
@@ -2408,6 +2718,14 @@ class Scheduler(SchedulerInterface):
         num_scheduled_tokens = scheduler_output.num_scheduled_tokens
         for req_id, num_scheduled_token in num_scheduled_tokens.items():
             request = self.requests[req_id]
+            plan = scheduler_output.layered_prefill_plan
+            if (
+                plan is not None
+                and plan.boundary_mode is not None
+                and req_id in plan.prefill_req_ids
+            ):
+                self._update_after_boundary_schedule(request, scheduler_output)
+                continue
             request.num_computed_tokens += num_scheduled_token
             request.num_in_flight_tokens += num_scheduled_token
             if self.defer_block_free:
