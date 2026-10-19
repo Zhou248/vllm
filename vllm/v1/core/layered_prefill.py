@@ -86,6 +86,8 @@ class LayeredPrefillConfig:
     enabled: bool = False
     boundary_policy: str = "off"
     boundary_trace: bool = False
+    decode_first: bool = False
+    max_prefill_batch_size: int = 1
     mode: str = "one_group"
     group_token_target: int = DEFAULT_GROUP_TOKEN_TARGET
     allowed_num_groups: tuple[int, ...] = DEFAULT_ALLOWED_NUM_GROUPS
@@ -112,6 +114,14 @@ class LayeredPrefillConfig:
         object.__setattr__(self, "allowed_num_groups", groups)
         if self.boundary_policy not in ("off", "pp_transition"):
             raise ValueError("boundary_policy must be 'off' or 'pp_transition'")
+        if self.max_prefill_batch_size <= 0:
+            raise ValueError("max_prefill_batch_size must be positive")
+        if self.max_prefill_batch_size > 1 and self.boundary_policy != "pp_transition":
+            raise ValueError("multi-prefill admission requires pp_transition")
+        if self.decode_first and self.boundary_policy != "pp_transition":
+            raise ValueError("decode_first requires pp_transition")
+        if self.max_prefill_batch_size > 1 and not self.decode_first:
+            raise ValueError("multi-prefill admission requires decode_first")
         if self.enabled and (self.fuse_mixed_batch or self.same_layer_batch):
             raise ValueError(
                 "layered_prefill_config: same_layer_batch and fuse_mixed_batch "
@@ -176,6 +186,8 @@ class LayeredPrefillConfig:
             enabled=bool(raw.get("enabled", False)),
             boundary_policy=str(raw.get("boundary_policy", "off")),
             boundary_trace=bool(raw.get("boundary_trace", False)),
+            decode_first=bool(raw.get("decode_first", False)),
+            max_prefill_batch_size=int(raw.get("max_prefill_batch_size", 1)),
             mode=str(raw.get("mode", "one_group")),
             group_token_target=int(
                 raw.get("group_token_target", DEFAULT_GROUP_TOKEN_TARGET)
@@ -426,6 +438,7 @@ class LayeredPrefillPlan:
     boundary_mode: str | None = None
     group_stop: int | None = None
     model_num_layers: int | None = None
+    sampling_req_ids: tuple[str, ...] | None = None
 
     def __post_init__(self) -> None:
         if self.version != 1:
@@ -463,6 +476,13 @@ class LayeredPrefillPlan:
         object.__setattr__(self, "query_tokens", query_tokens)
         object.__setattr__(self, "commit_tokens", commit_tokens)
         object.__setattr__(self, "cached_tokens", cached_tokens)
+        if self.sampling_req_ids is not None:
+            sample_ids = tuple(self.sampling_req_ids)
+            if len(set(sample_ids)) != len(sample_ids) or not set(sample_ids) <= set(
+                req_ids
+            ):
+                raise ValueError("sampling_req_ids must be unique prefill requests")
+            object.__setattr__(self, "sampling_req_ids", sample_ids)
         if not req_ids:
             raise ValueError("a layered prefill plan must contain a request")
         if len(req_ids) != len(set(req_ids)):
@@ -501,7 +521,12 @@ class LayeredPrefillPlan:
     @property
     def is_sampling_step(self) -> bool:
         """Only the final group of the final prompt chunk produces logits."""
-        return self.is_final_group and self.is_final_chunk
+        final_chunk = (
+            self.is_final_chunk
+            if self.sampling_req_ids is None
+            else bool(self.sampling_req_ids)
+        )
+        return self.is_final_group and final_chunk
 
     @property
     def layer_range(self) -> LayerGroupRange:

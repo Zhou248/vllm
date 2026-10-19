@@ -583,6 +583,28 @@ def test_config_rejects_multiple_groups_per_step_in_phase_one():
         LayeredPrefillConfig(enabled=True, max_groups_per_step=2)
 
 
+def test_decode_first_and_prefill_batching_are_opt_in():
+    config = LayeredPrefillConfig()
+
+    assert config.decode_first is False
+    assert config.max_prefill_batch_size == 1
+
+
+@pytest.mark.parametrize(
+    "options, message",
+    [
+        ({"decode_first": True}, "decode_first requires pp_transition"),
+        (
+            {"boundary_policy": "pp_transition", "max_prefill_batch_size": 2},
+            "multi-prefill admission requires decode_first",
+        ),
+    ],
+)
+def test_decode_first_config_rejects_unsupported_activation(options, message):
+    with pytest.raises(ValueError, match=message):
+        LayeredPrefillConfig(enabled=True, **options)
+
+
 def test_merge_consecutive_groups_on_pp1_is_a_wider_layer_range():
     from vllm.v1.core.layered_prefill import merge_consecutive_layer_groups
 
@@ -1480,6 +1502,8 @@ def test_boundary_multi_prefill_keeps_native_batch():
     for request in requests:
         scheduler.add_request(request)
     output = scheduler.schedule()
+    assert scheduler.layered_prefill_policy.config.decode_first is False
+    assert scheduler.layered_prefill_policy.config.max_prefill_batch_size == 1
     assert output.layered_prefill_plan is None
     assert all(output.num_scheduled_tokens[r.request_id] == 8 for r in requests)
     assert all(r.num_computed_tokens == 8 for r in requests)
@@ -2668,3 +2692,410 @@ def test_ring_step_plan_survives_scheduler_output_copy_and_transport():
     output.ring_step_plan = plan
     assert replace(output).ring_step_plan is plan
     assert pickle.loads(pickle.dumps(output)).ring_step_plan == plan
+
+
+def _decode_first_boundary_scheduler(
+    *, groups=4, budget=8, num_decodes=1, max_num_seqs=6, chunk_threshold=0
+):
+    """Bootstrap ready D rows, then enable the opt-in boundary cohort policy."""
+    from tests.v1.core.utils import create_requests
+
+    scheduler = _local_scheduler(
+        max_num_seqs=max_num_seqs,
+        max_num_batched_tokens=budget,
+        max_model_len=16384,
+        use_v2_model_runner=True,
+        async_scheduling=False,
+    )
+    scheduler.parallel_config.pipeline_parallel_size = 2
+    scheduler.parallel_config.tensor_parallel_size = 2
+    scheduler.use_pp = True
+    decodes = create_requests(
+        num_requests=num_decodes,
+        num_tokens=2,
+        max_tokens=32,
+        req_ids=[f"decode_{i}" for i in range(num_decodes)],
+    )
+    for request in decodes:
+        scheduler.add_request(request)
+    bootstrap = scheduler.schedule()
+    scheduler.update_from_output(bootstrap, _wavefront_output(bootstrap))
+    assert all(request.num_output_tokens == 1 for request in decodes)
+    if chunk_threshold:
+        scheduler.scheduler_config.long_prefill_token_threshold = chunk_threshold
+    _enable_layered_scheduler(
+        scheduler,
+        allowed_num_groups=[groups],
+        boundary_policy="pp_transition",
+        decode_first=True,
+        max_prefill_batch_size=2,
+        max_chunk_tokens=budget,
+    )
+    scheduler.defer_block_free = True
+    # Boundary admission deliberately needs retired D-only history. Enabling
+    # the policy after bootstrap must therefore observe one policy-owned D step.
+    decode_only = scheduler.schedule()
+    assert decode_only.layered_prefill_plan is None
+    scheduler.update_from_output(decode_only, _cohort_wavefront_output(decode_only))
+    return scheduler, decodes
+
+
+def _cohort_wavefront_output(step):
+    """Sample D plus only P rows explicitly eligible in this interval."""
+    result = _empty_runner_output(list(step.num_scheduled_tokens))
+    plan = step.layered_prefill_plan
+    prefill_ids = set() if plan is None else set(plan.prefill_req_ids)
+    if plan is None:
+        sampling_prefills = set()
+    elif plan.sampling_req_ids is None:
+        sampling_prefills = prefill_ids if plan.is_sampling_step else set()
+    else:
+        sampling_prefills = set(plan.sampling_req_ids) if plan.is_final_group else set()
+    for index, req_id in enumerate(result.req_ids):
+        if req_id not in prefill_ids or req_id in sampling_prefills:
+            result.sampled_token_ids[index] = [1000]
+    return result
+
+
+def test_boundary_batch_decode_first_reserves_all_decode_rows_at_depth_two():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, decodes = _decode_first_boundary_scheduler(
+        groups=4, budget=8, num_decodes=2
+    )
+    prefills = create_requests(
+        num_requests=2, num_tokens=3, max_tokens=4, req_ids=["p0", "p1"]
+    )
+    for request in prefills:
+        scheduler.add_request(request)
+
+    first = scheduler.schedule()
+    first_plan = first.layered_prefill_plan
+    assert list(first.num_scheduled_tokens)[:2] == [r.request_id for r in decodes]
+    assert first_plan is not None
+    assert first_plan.prefill_req_ids == tuple(r.request_id for r in prefills)
+    assert sum(first_plan.query_tokens.values()) == 6
+    assert first.total_num_scheduled_tokens == 8
+
+    second = scheduler.schedule()
+    second_plan = second.layered_prefill_plan
+    assert second_plan is not None
+    assert second_plan.cohort_id == first_plan.cohort_id
+    assert second_plan.prefill_req_ids == first_plan.prefill_req_ids
+    assert second_plan.query_tokens == first_plan.query_tokens
+    assert second.total_num_scheduled_tokens <= 6
+
+    scheduler.update_from_output(first, _cohort_wavefront_output(first))
+    third = scheduler.schedule()
+    third_plan = third.layered_prefill_plan
+    assert third_plan is not None
+    assert third_plan.cohort_id == first_plan.cohort_id
+    assert third_plan.prefill_req_ids == first_plan.prefill_req_ids
+    assert third_plan.query_tokens == first_plan.query_tokens
+    assert all(third.num_scheduled_tokens[r.request_id] == 1 for r in decodes)
+    assert third.total_num_scheduled_tokens <= 8
+
+
+def test_boundary_batch_samples_only_prefills_finishing_this_chunk():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _decode_first_boundary_scheduler(groups=4, budget=8)
+    (short,) = create_requests(
+        num_requests=1, num_tokens=2, max_tokens=4, req_ids=["short"]
+    )
+    (long,) = create_requests(
+        num_requests=1, num_tokens=8, max_tokens=4, req_ids=["long"]
+    )
+    scheduler.add_request(short)
+    scheduler.add_request(long)
+
+    plans = []
+    while True:
+        step = scheduler.schedule()
+        plan = step.layered_prefill_plan
+        assert plan is not None
+        plans.append(plan)
+        assert plan.prefill_req_ids == (short.request_id, long.request_id)
+        assert plan.query_tokens == {short.request_id: 2, long.request_id: 4}
+        if not plan.is_final_group:
+            assert not any(plan.commit_tokens.values())
+        scheduler.update_from_output(step, _cohort_wavefront_output(step))
+        if plan.is_final_group:
+            break
+
+    final = plans[-1]
+    assert final.commit_tokens == final.query_tokens
+    assert final.is_final_chunk is False
+    assert final.sampling_req_ids == (short.request_id,)
+    assert final.is_sampling_step
+    assert short.num_output_tokens == 1
+    assert long.num_output_tokens == 0
+    assert long.num_computed_tokens == 4
+
+
+def test_boundary_batch_continuation_stays_in_lockstep_and_holds_next_chunk():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, _ = _decode_first_boundary_scheduler(
+        groups=4, budget=12, chunk_threshold=4
+    )
+    prefills = create_requests(
+        num_requests=2, num_tokens=9, max_tokens=4, req_ids=["lock0", "lock1"]
+    )
+    for request in prefills:
+        scheduler.add_request(request)
+
+    first = scheduler.schedule()
+    second = scheduler.schedule()
+    first_plan = first.layered_prefill_plan
+    second_plan = second.layered_prefill_plan
+    assert first_plan is not None and second_plan is not None
+    assert first_plan.prefill_req_ids == second_plan.prefill_req_ids == (
+        prefills[0].request_id,
+        prefills[1].request_id,
+    )
+    assert first_plan.query_tokens == second_plan.query_tokens == {
+        prefills[0].request_id: 4,
+        prefills[1].request_id: 4,
+    }
+    assert second_plan.cohort_id == first_plan.cohort_id
+    assert second_plan.group_start == first_plan.group_end
+
+    from collections import deque
+
+    queue = deque([first, second])
+    plans = [first_plan, second_plan]
+    while not plans[-1].is_final_group:
+        completed = queue.popleft()
+        scheduler.update_from_output(completed, _cohort_wavefront_output(completed))
+        step = scheduler.schedule()
+        plan = step.layered_prefill_plan
+        if plan is not None:
+            assert plan.cohort_id == first_plan.cohort_id
+            assert plan.prefill_req_ids == first_plan.prefill_req_ids
+            assert plan.query_tokens == first_plan.query_tokens
+            plans.append(plan)
+        if step.total_num_scheduled_tokens:
+            queue.append(step)
+        assert len(queue) <= 2
+
+    assert [
+        layer for plan in plans for layer in range(plan.group_start, plan.group_end)
+    ] == list(range(32))
+    assert plans[-1].resume_group_id == plans[-1].num_groups == 4
+    # The cohort's next chunk cannot enter while its final interval is pending.
+    final_retired = False
+    while queue:
+        completed = queue.popleft()
+        was_final = (
+            completed.layered_prefill_plan is not None
+            and completed.layered_prefill_plan.is_final_group
+        )
+        scheduler.update_from_output(completed, _cohort_wavefront_output(completed))
+        final_retired |= was_final
+        if not final_retired:
+            held = scheduler.schedule()
+            assert not set(first_plan.prefill_req_ids) & set(held.num_scheduled_tokens)
+            if held.total_num_scheduled_tokens:
+                queue.append(held)
+
+    next_chunk = scheduler.schedule()
+    assert all(req.request_id in next_chunk.num_scheduled_tokens for req in prefills)
+
+
+def test_boundary_batch_partial_abort_continues_only_survivor():
+    from tests.v1.core.utils import create_requests
+
+    from vllm.v1.request import RequestStatus
+
+    scheduler, _ = _decode_first_boundary_scheduler(
+        groups=8, budget=12, chunk_threshold=4
+    )
+    aborted, survivor = create_requests(
+        num_requests=2, num_tokens=9, max_tokens=4, req_ids=["abort", "survivor"]
+    )
+    for request in (aborted, survivor):
+        scheduler.add_request(request)
+    first = scheduler.schedule()
+    second = scheduler.schedule()
+    assert first.layered_prefill_plan.group_id == 0
+    assert second.layered_prefill_plan.group_id == 1
+
+    scheduler.finish_requests(aborted.request_id, RequestStatus.FINISHED_ABORTED)
+    scheduler.update_from_output(first, _cohort_wavefront_output(first))
+    continued = scheduler.schedule()
+    plan = continued.layered_prefill_plan
+    assert plan is not None
+    assert plan.group_id > second.layered_prefill_plan.group_id
+    assert plan.prefill_req_ids == (survivor.request_id,)
+    assert aborted.request_id not in scheduler.requests
+
+
+def test_boundary_batch_all_aborted_keeps_last_submission_fence():
+    from tests.v1.core.utils import create_requests
+
+    from vllm.v1.request import RequestStatus
+
+    scheduler, _ = _decode_first_boundary_scheduler(
+        groups=8, budget=12, chunk_threshold=4
+    )
+    requests = create_requests(
+        num_requests=2, num_tokens=9, max_tokens=4, req_ids=["abort0", "abort1"]
+    )
+    for request in requests:
+        scheduler.add_request(request)
+    first = scheduler.schedule()
+    second = scheduler.schedule()
+    assert second.layered_prefill_plan is not None
+    assert not second.layered_prefill_plan.is_final_group
+    scheduler.finish_requests(
+        [request.request_id for request in requests], RequestStatus.FINISHED_ABORTED
+    )
+    assert scheduler.deferred_frees
+
+    scheduler.update_from_output(first, _cohort_wavefront_output(first))
+    assert scheduler.deferred_frees
+    scheduler.update_from_output(second, _cohort_wavefront_output(second))
+    assert not scheduler.deferred_frees
+    assert scheduler.processed_step_seq == scheduler.sched_step_seq
+
+
+def test_boundary_batch_respects_max_num_seqs_without_falling_back():
+    from tests.v1.core.utils import create_requests
+
+    scheduler, decodes = _decode_first_boundary_scheduler(
+        groups=4, budget=8, num_decodes=2, max_num_seqs=3
+    )
+    first, second = create_requests(
+        num_requests=2, num_tokens=3, max_tokens=4, req_ids=["slot0", "slot1"]
+    )
+    scheduler.add_request(first)
+    scheduler.add_request(second)
+
+    output = scheduler.schedule()
+    plan = output.layered_prefill_plan
+    assert plan is not None
+    assert plan.prefill_req_ids == (first.request_id,)
+    assert second.request_id not in output.num_scheduled_tokens
+    assert len(scheduler.running) == len(decodes) + 1
+
+
+def test_boundary_batch_pause_all_stops_and_pause_new_resumes_existing_cohort():
+    from tests.v1.core.utils import create_requests
+
+    from vllm.v1.core.sched.interface import PauseState
+
+    scheduler, _ = _decode_first_boundary_scheduler(
+        groups=8, budget=12, chunk_threshold=4
+    )
+    active = create_requests(
+        num_requests=2, num_tokens=9, max_tokens=4, req_ids=["active0", "active1"]
+    )
+    for request in active:
+        scheduler.add_request(request)
+    first = scheduler.schedule()
+    first_plan = first.layered_prefill_plan
+    assert first_plan is not None
+
+    scheduler.set_pause_state(PauseState.PAUSED_ALL)
+    stopped = scheduler.schedule()
+    assert stopped.layered_prefill_plan is None
+    assert not set(first_plan.prefill_req_ids) & set(stopped.num_scheduled_tokens)
+
+    (newcomer,) = create_requests(
+        num_requests=1, num_tokens=3, max_tokens=4, req_ids=["newcomer"]
+    )
+    scheduler.add_request(newcomer)
+    scheduler.set_pause_state(PauseState.PAUSED_NEW)
+    resumed = scheduler.schedule()
+    resumed_plan = resumed.layered_prefill_plan
+    assert resumed_plan is not None
+    assert resumed_plan.cohort_id == first_plan.cohort_id
+    assert resumed_plan.prefill_req_ids == first_plan.prefill_req_ids
+    assert resumed_plan.group_start == first_plan.group_end
+    assert newcomer.request_id not in resumed.num_scheduled_tokens
+
+
+def _running_prefill_ahead_of_ready_decode_scheduler():
+    """Leave an older partial P before a ready D in the running queue."""
+    from tests.v1.core.utils import create_requests
+
+    scheduler = _local_scheduler(
+        max_num_seqs=3,
+        max_num_batched_tokens=4,
+        max_model_len=16384,
+        long_prefill_token_threshold=2,
+        use_v2_model_runner=True,
+        async_scheduling=False,
+    )
+    scheduler.parallel_config.pipeline_parallel_size = 2
+    scheduler.parallel_config.tensor_parallel_size = 2
+    scheduler.use_pp = True
+    (prefill,) = create_requests(
+        num_requests=1, num_tokens=8, max_tokens=4, req_ids=["older_prefill"]
+    )
+    (decode,) = create_requests(
+        num_requests=1, num_tokens=2, max_tokens=32, req_ids=["ready_decode"]
+    )
+    scheduler.add_request(prefill)
+    scheduler.add_request(decode)
+    native = scheduler.schedule()
+    assert native.num_scheduled_tokens == {
+        prefill.request_id: 2,
+        decode.request_id: 2,
+    }
+    result = _empty_runner_output(list(native.num_scheduled_tokens))
+    result.sampled_token_ids[result.req_id_to_index[decode.request_id]] = [1000]
+    scheduler.update_from_output(native, result)
+    assert prefill.num_computed_tokens == 2 and prefill.num_output_tokens == 0
+    assert decode.num_output_tokens == 1
+
+    scheduler.scheduler_config.long_prefill_token_threshold = 0
+    _enable_layered_scheduler(
+        scheduler,
+        allowed_num_groups=[4],
+        boundary_policy="pp_transition",
+        decode_first=True,
+        max_prefill_batch_size=1,
+        max_chunk_tokens=4,
+    )
+    scheduler.defer_block_free = True
+    return scheduler, prefill, decode
+
+
+def test_decode_first_reorders_ready_decode_ahead_of_older_running_prefill():
+    scheduler, prefill, decode = _running_prefill_ahead_of_ready_decode_scheduler()
+
+    output = scheduler.schedule()
+    assert list(output.num_scheduled_tokens)[:2] == [
+        decode.request_id,
+        prefill.request_id,
+    ]
+    assert output.num_scheduled_tokens[decode.request_id] == 1
+    assert output.num_scheduled_tokens[prefill.request_id] == 2
+    assert output.total_num_scheduled_tokens == 3
+
+
+def test_decode_first_priority_kv_failure_does_not_evict_selected_decode(monkeypatch):
+    from vllm.v1.core.sched.request_queue import SchedulingPolicy
+
+    scheduler, prefill, decode = _running_prefill_ahead_of_ready_decode_scheduler()
+    scheduler.policy = SchedulingPolicy.PRIORITY
+    prefill.priority = -10
+    decode.priority = 10
+    allocate_slots = scheduler.kv_cache_manager.allocate_slots
+
+    def fail_prefill_allocation(request, *args, **kwargs):
+        if request is prefill:
+            return None
+        return allocate_slots(request, *args, **kwargs)
+
+    monkeypatch.setattr(
+        scheduler.kv_cache_manager, "allocate_slots", fail_prefill_allocation
+    )
+    output = scheduler.schedule()
+
+    assert output.num_scheduled_tokens == {decode.request_id: 1}
+    assert decode.request_id not in output.preempted_req_ids
+    assert prefill.request_id in output.preempted_req_ids
+    assert decode in scheduler.running
